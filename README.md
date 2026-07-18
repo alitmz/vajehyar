@@ -1,38 +1,30 @@
-# VajehYar v2.6 — Offline AI Tutor
+# VajehYar v2.7 — Smart Cloud AI Router
 
-VajehYar is a private, installable vocabulary and IELTS-learning PWA. Version 2.6 adds an optional language model that runs inside the browser on the user's own device.
+VajehYar is a mobile-first PWA for personal English vocabulary learning, IELTS Band 7 preparation, Leitner review, weekly mixed tests, active writing, and AI-assisted feedback.
 
-## New in v2.6
+## New in v2.7
 
-- **Offline AI Tutor:** sentence and paragraph feedback runs locally after a one-time model download.
-- **No API key or token billing:** the tutor uses an open-weight model through WebLLM rather than a paid cloud API.
-- **Two model choices:** a Lite Qwen 2.5 0.5B model and a higher-quality Qwen 3 1.7B model.
-- **Sentence Coach:** grammar, spelling, word choice, target-word usage, collocations, naturalness, corrected text, and a rewrite task.
-- **Active Practice integration:** send today's paragraph directly to the AI Tutor and preserve the structured feedback with the practice session.
-- **IELTS Writing Coach:** educational band-range feedback organised around Task Response/Achievement, Coherence and Cohesion, Lexical Resource, and Grammatical Range and Accuracy.
-- **Question Builder:** generates extra practice while grounding correct answers in the user's saved words or the bundled IELTS vocabulary bank.
-- **Private history:** recent feedback is kept in local storage and included in VajehYar backups.
-- **Model controls:** download/load, stop generation, choose feedback language, and remove the downloaded model.
+- Groq and OpenRouter support
+- Each user supplies their own provider key or connects OpenRouter with OAuth PKCE
+- No API key is bundled in the public GitHub repository
+- Session-only key storage by default; optional device storage on trusted devices
+- API keys are excluded from backups
+- Smart provider fallback and model rotation
+- Dynamic model discovery from both providers
+- OpenRouter free-model-only mode
+- Task-aware model selection for sentence feedback, IELTS writing, and question generation
+- Daily in-app soft cap and usage counters
+- Exact-result cache to avoid repeating identical API calls
+- Clear handling of invalid keys, quota limits, rate limits, timeouts, and unavailable models
 
-## Important limitations
+## Security
 
-- The first AI setup is a large download and needs internet access.
-- The browser and phone must support WebGPU. Current Chrome versions are recommended.
-- The Standard model needs substantially more memory than the Lite model and may not work on every phone.
-- Browser storage can be cleared by the operating system or user. Keep VajehYar backups.
-- Small local models can miss errors or give imperfect advice. IELTS band feedback is educational and is not an official examiner score.
-- “Free forever” here means no per-request API fee and no hosted inference account. It does not guarantee that third-party model hosting URLs will never change; the runtime and model are open-weight/open-source components.
+Never commit API keys to GitHub. Every user should connect their own Groq or OpenRouter account. Browser-side keys can be inspected by someone with access to that device, so session-only storage is the safest default.
 
-## Deploy on GitHub Pages
+## Deployment
 
-1. Extract the ZIP.
-2. Upload every file and the `icons` and `vendor` folders to the root of the existing `vajehyar` repository.
-3. Replace the old files and commit.
-4. Wait for GitHub Pages deployment to become green.
-5. Open `https://alitmz.github.io/vajehyar/?release=2.6.0` and refresh once.
-6. Do not clear site storage; your library, progress, feedback history, and downloaded model live in browser storage.
+Upload every file and folder from this package to the root of your GitHub Pages repository and replace older files. Then visit:
 
-## Third-party components
+`https://alitmz.github.io/vajehyar/?release=2.7.0`
 
-- WebLLM 0.2.84, Apache License 2.0. Its license is included in `vendor/WEBLLM-LICENSE.txt`.
-- Qwen model weights are downloaded on demand from the MLC AI model repositories. The selected Qwen models are open-weight and distributed under their model licences.
+Refresh once after GitHub Pages finishes deploying. Existing vocabulary and progress use the same storage keys and remain available.

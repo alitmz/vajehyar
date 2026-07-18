@@ -1,7 +1,10 @@
-# Update to v2.6
+# Update to VajehYar v2.7
 
-Upload all extracted files and both folders (`icons` and `vendor`) to the repository root. Commit, wait for Pages deployment, then open:
+1. Extract the ZIP file.
+2. Upload all extracted files and the `icons` folder to the repository root.
+3. Replace the older files and commit the changes.
+4. Wait for GitHub Pages deployment to complete.
+5. Open `https://alitmz.github.io/vajehyar/?release=2.7.0` and refresh once.
+6. Open **Cloud AI Tutor** and connect your own Groq or OpenRouter account.
 
-`https://alitmz.github.io/vajehyar/?release=2.6.0`
-
-Refresh once. Do not clear site data. The AI model is downloaded later from inside the AI Tutor.
+Do not put an API key in any project file. Keys entered in VajehYar are stored only in that browser and are excluded from backups.

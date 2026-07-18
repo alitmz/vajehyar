@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#5b5cf0">
-  <meta name="description" content="VajehYar — an IELTS vocabulary trainer with a private, on-device AI writing tutor.">
+  <meta name="description" content="VajehYar — an IELTS vocabulary trainer with a smart Groq and OpenRouter AI tutor.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="./manifest.webmanifest?release=2.6.0">
+  <link rel="manifest" href="./manifest.webmanifest?release=2.7.0">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles-v2.6.css?release=2.6.0">
+  <link rel="stylesheet" href="./styles-v2.7.css?release=2.7.0">
   <title>VajehYar</title>
 </head>
 <body>
@@ -95,10 +95,10 @@
 
       <div class="card ai-home-card">
         <div class="ai-home-copy">
-          <span class="eyebrow">OFFLINE AI TUTOR</span>
-          <h3>Get private feedback on sentences and IELTS writing.</h3>
-          <p class="muted">After a one-time model download, analysis runs on this device with no API key, token bill, or server.</p>
-          <div class="ai-feature-chips"><span>Grammar</span><span>Collocations</span><span>IELTS feedback</span><span>Question builder</span></div>
+          <span class="eyebrow">CLOUD AI TUTOR</span>
+          <h3>Get fast feedback on sentences and IELTS writing.</h3>
+          <p class="muted">Connect your own Groq or OpenRouter account. Smart routing uses lighter models first and falls back when a provider is unavailable.</p>
+          <div class="ai-feature-chips"><span>Groq</span><span>OpenRouter</span><span>Smart fallback</span><span>IELTS feedback</span></div>
         </div>
         <div class="ai-home-action">
           <div class="ai-status-orb" id="aiHomeStatusOrb"><span>AI</span><small id="aiHomeStatus">Not set up</small></div>
@@ -326,7 +326,7 @@
           <span class="eyebrow">TODAY'S WORD SET</span>
           <h3 id="practicePrompt">Write 2–4 sentences using at least two target words naturally.</h3>
           <div id="practiceWordChips" class="chips practice-word-chips"></div>
-          <p class="muted mini">VajehYar tracks target-word use. The optional Offline AI Tutor can also check grammar, vocabulary choice, collocations, and naturalness.</p>
+          <p class="muted mini">VajehYar tracks target-word use. The optional Cloud AI Tutor can also check grammar, vocabulary choice, collocations, and naturalness.</p>
         </div>
 
         <div class="card practice-editor-card">
@@ -338,7 +338,7 @@
           <div class="practice-meter"><span id="practiceMeter"></span></div>
           <div class="practice-actions">
             <button id="newPracticePromptBtn" class="secondary">New prompt</button>
-            <button id="checkPracticeAiBtn" class="ai-button">Check with Offline AI</button>
+            <button id="checkPracticeAiBtn" class="ai-button">Check with Cloud AI</button>
             <button id="savePracticeBtn" class="primary">Complete practice · +20 XP</button>
           </div>
           <p id="practiceFeedback" class="answer-feedback hidden"></p>
@@ -498,23 +498,61 @@
     <section id="aiTutorView" class="view">
       <div class="ai-topline">
         <button id="aiBackBtn" class="text-button">← Home</button>
-        <div><span class="eyebrow">PRIVATE · ON DEVICE</span><h2>Offline AI Tutor</h2></div>
+        <div><span class="eyebrow">YOUR KEYS · YOUR QUOTA</span><h2>Cloud AI Tutor</h2></div>
       </div>
 
-      <div class="card ai-model-card">
-        <div class="ai-model-heading">
-          <div>
-            <span class="eyebrow">LOCAL MODEL</span>
-            <h3 id="aiModelTitle">Set up your tutor</h3>
-            <p id="aiCompatibilityText" class="muted">Checking WebGPU compatibility…</p>
-          </div>
-          <div class="ai-private-badge">🔒 Stays on device</div>
+      <div class="card security-alert">
+        <div class="security-alert-icon">🔐</div>
+        <div>
+          <strong>Never publish an API key in GitHub or share it in a message.</strong>
+          <p class="muted">Keys entered here stay in this browser only and are never included in VajehYar backups. Session storage is recommended, especially on shared devices.</p>
         </div>
-        <div class="ai-model-controls">
-          <label>Model quality
-            <select id="aiModelSelect">
-              <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Lite · lower memory</option>
-              <option value="Qwen3-1.7B-q4f16_1-MLC">Standard · better feedback</option>
+      </div>
+
+      <div class="provider-grid">
+        <article class="card provider-card" data-provider-card="groq">
+          <div class="provider-heading">
+            <div><span class="eyebrow">FAST PRIMARY PROVIDER</span><h3>Groq</h3></div>
+            <span id="groqStatusPill" class="provider-pill disconnected">Not connected</span>
+          </div>
+          <p class="muted">Best for fast sentence checks, question generation, and longer IELTS reviews when your account has quota.</p>
+          <label for="groqKeyInput">Groq API key</label>
+          <div class="secret-row"><input id="groqKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="gsk_…"><button id="toggleGroqKeyBtn" class="icon-button" type="button" aria-label="Show or hide Groq key">◉</button></div>
+          <label class="check-row"><input id="rememberGroqKey" type="checkbox"> Keep on this device <span class="helper">Otherwise this browser session only</span></label>
+          <div class="provider-actions"><button id="saveGroqKeyBtn" class="primary">Save & test</button><button id="clearGroqKeyBtn" class="secondary">Disconnect</button></div>
+          <p id="groqConnectionText" class="mini muted">Enter a key created in your own Groq account.</p>
+        </article>
+
+        <article class="card provider-card" data-provider-card="openrouter">
+          <div class="provider-heading">
+            <div><span class="eyebrow">FREE MODEL FALLBACK</span><h3>OpenRouter</h3></div>
+            <span id="openrouterStatusPill" class="provider-pill disconnected">Not connected</span>
+          </div>
+          <p class="muted">Use the free-model router or select an available free model. OAuth creates a user-controlled key without putting it in GitHub.</p>
+          <label for="openrouterKeyInput">OpenRouter API key</label>
+          <div class="secret-row"><input id="openrouterKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-or-v1-…"><button id="toggleOpenRouterKeyBtn" class="icon-button" type="button" aria-label="Show or hide OpenRouter key">◉</button></div>
+          <label class="check-row"><input id="rememberOpenRouterKey" type="checkbox"> Keep on this device <span class="helper">Otherwise this browser session only</span></label>
+          <div class="provider-actions"><button id="saveOpenRouterKeyBtn" class="primary">Save & test</button><button id="connectOpenRouterBtn" class="secondary">Connect account</button><button id="clearOpenRouterKeyBtn" class="secondary">Disconnect</button></div>
+          <p id="openrouterConnectionText" class="mini muted">Use your own free OpenRouter account. Free usage still has account-level limits.</p>
+        </article>
+      </div>
+
+      <div class="card router-card">
+        <div class="section-heading compact"><div><span class="eyebrow">SMART ROUTER</span><h3>Use simple models first, then fall back</h3></div><span id="routerReadyPill" class="provider-pill disconnected">No provider</span></div>
+        <div class="router-controls">
+          <label>Provider order
+            <select id="aiProviderOrder">
+              <option value="groq-first">Groq → OpenRouter</option>
+              <option value="openrouter-first">OpenRouter → Groq</option>
+              <option value="groq-only">Groq only</option>
+              <option value="openrouter-only">OpenRouter only</option>
+            </select>
+          </label>
+          <label>Model policy
+            <select id="aiModelPolicy">
+              <option value="efficient">Efficient · smallest first</option>
+              <option value="balanced">Balanced</option>
+              <option value="quality">Best quality first</option>
             </select>
           </label>
           <label>Explanation language
@@ -524,17 +562,37 @@
               <option value="both">English + Persian</option>
             </select>
           </label>
+          <label>App daily soft cap
+            <select id="aiDailyCap">
+              <option value="20">20 requests</option>
+              <option value="40">40 requests</option>
+              <option value="80">80 requests</option>
+              <option value="0">No app cap</option>
+            </select>
+          </label>
         </div>
-        <div class="ai-progress-wrap hidden" id="aiProgressWrap">
-          <div class="progress-track"><span id="aiModelProgress"></span></div>
-          <p id="aiProgressText" class="mini muted">Preparing…</p>
+        <div class="router-switches">
+          <label class="check-row"><input id="aiRotateModels" type="checkbox"> Rotate among available models to reduce repeated pressure on one model</label>
+          <label class="check-row"><input id="aiFreeOnly" type="checkbox"> OpenRouter free models only</label>
+          <label class="check-row"><input id="aiCacheResults" type="checkbox"> Reuse identical previous feedback without another API call</label>
         </div>
-        <div class="ai-model-actions">
-          <button id="aiLoadBtn" class="primary">Download & load model</button>
-          <button id="aiRemoveBtn" class="danger hidden">Remove downloaded model</button>
-          <button id="aiStopBtn" class="secondary hidden">Stop generation</button>
+        <div class="model-picker-grid">
+          <label>Preferred Groq model
+            <select id="groqModelSelect"><option value="auto">Automatic by task</option></select>
+          </label>
+          <label>Preferred OpenRouter model
+            <select id="openrouterModelSelect"><option value="openrouter/free">OpenRouter Free Router</option></select>
+          </label>
         </div>
-        <p class="mini muted">The first setup is a large download and needs internet. Later feedback works offline while the model remains in browser storage. Performance depends on your phone and Chrome WebGPU support.</p>
+        <div class="provider-actions"><button id="refreshModelsBtn" class="secondary">Refresh available models</button><button id="testRouterBtn" class="primary">Test smart router</button></div>
+        <p id="routerStatusText" class="mini muted">Connect at least one provider. VajehYar tries another configured model or provider when a request is rate-limited or unavailable.</p>
+      </div>
+
+      <div class="usage-grid">
+        <article class="card usage-card"><span>Requests today</span><strong id="aiCallsToday">0</strong><small id="aiCapToday">of 40 app cap</small></article>
+        <article class="card usage-card"><span>Estimated tokens</span><strong id="aiTokensToday">0</strong><small>provider-reported when available</small></article>
+        <article class="card usage-card"><span>Cache saves</span><strong id="aiCacheHits">0</strong><small>API calls avoided</small></article>
+        <article class="card usage-card"><span>Last route</span><strong id="aiLastProvider">—</strong><small id="aiLastModel">No response yet</small></article>
       </div>
 
       <div class="ai-mode-tabs" id="aiModeTabs">
@@ -549,7 +607,7 @@
           <label for="aiTargetWords">Target words or phrases</label>
           <input id="aiTargetWords" placeholder="e.g. significant impact, account for">
           <label for="aiSentenceText">Your sentence or paragraph</label>
-          <textarea id="aiSentenceText" rows="8" placeholder="Write here, then ask the local tutor to analyse it..."></textarea>
+          <textarea id="aiSentenceText" rows="8" placeholder="Write here, then ask the tutor to analyse it..."></textarea>
           <div class="ai-action-row"><button id="aiAnalyseSentenceBtn" class="primary">Analyse writing</button><button id="aiUseTodayWordsBtn" class="secondary">Use today's words</button></div>
         </div>
       </div>
@@ -591,7 +649,7 @@
         </div>
       </div>
 
-      <div id="aiRunStatus" class="card ai-run-status hidden"><div class="ai-thinking"><span></span><span></span><span></span></div><div><strong id="aiRunTitle">Tutor is thinking…</strong><p id="aiRunMessage" class="muted">Local generation can take a while on a phone.</p></div></div>
+      <div id="aiRunStatus" class="card ai-run-status hidden"><div class="ai-thinking"><span></span><span></span><span></span></div><div><strong id="aiRunTitle">Tutor is thinking…</strong><p id="aiRunMessage" class="muted">Trying the best available route.</p></div><button id="aiStopBtn" class="secondary">Stop</button></div>
       <div id="aiResult" class="ai-result hidden"></div>
 
       <div class="card">
@@ -639,16 +697,16 @@
 
 
         <div class="card">
-          <span class="eyebrow">OFFLINE AI</span>
-          <h2>Private writing tutor</h2>
-          <p class="muted">Download an open-weight model once, then check sentences and IELTS writing locally without API tokens.</p>
+          <span class="eyebrow">CLOUD AI</span>
+          <h2>Groq + OpenRouter tutor</h2>
+          <p class="muted">Connect your own provider account. Keys stay in this browser and are never included in backups or source files.</p>
           <button id="settingsOpenAiBtn" class="primary wide">Open AI Tutor</button>
         </div>
 
         <div class="card">
           <span class="eyebrow">APP</span>
           <h2>How it works</h2>
-          <p class="muted">New dictionary searches and the first AI-model download need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, adaptive discovery history, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
+          <p class="muted">New dictionary searches and cloud AI feedback need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, adaptive discovery history, AI feedback history, XP, streaks, and backups stay on this device. API keys are deliberately excluded from backups. Persian text uses the Vazirmatn typeface when available.</p>
         </div>
       </div>
     </section>
@@ -664,6 +722,6 @@
 
   <div id="toast" class="toast" role="status"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
-  <script src="./bootstrap-v2.6.js?release=2.6.0"></script>
+  <script src="./bootstrap-v2.7.js?release=2.7.0"></script>
 </body>
 </html>
