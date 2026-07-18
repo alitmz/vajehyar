@@ -3,8 +3,9 @@ const GAME_KEY = 'vajehyar_game_v1';
 const HISTORY_KEY = 'vajehyar_search_history_v1';
 const PRACTICE_KEY = 'vajehyar_practice_v1';
 const WEEKLY_KEY = 'vajehyar_weekly_tests_v1';
+const DISCOVERY_HISTORY_KEY = 'vajehyar_discovery_history_v2';
 const INTERVALS = [1, 2, 4, 8, 16];
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.5.0';
 
 // Helpers are intentionally declared before state initialization.
 // v2.0 initialized game state too early, which stopped all JavaScript,
@@ -37,6 +38,7 @@ let game = {...defaultGame(), ...loadJson(GAME_KEY, {})};
 let searchHistory = loadJson(HISTORY_KEY, []);
 let practiceSessions = loadJson(PRACTICE_KEY, []);
 let weeklyTests = loadJson(WEEKLY_KEY, []);
+let discoveryHistory = loadJson(DISCOVERY_HISTORY_KEY, {});
 let currentResult = null;
 let reviewQueue = [];
 let reviewIndex = 0;
@@ -60,6 +62,7 @@ function persist(){
   localStorage.setItem(HISTORY_KEY, JSON.stringify(searchHistory));
   localStorage.setItem(PRACTICE_KEY, JSON.stringify(practiceSessions));
   localStorage.setItem(WEEKLY_KEY, JSON.stringify(weeklyTests));
+  localStorage.setItem(DISCOVERY_HISTORY_KEY, JSON.stringify(discoveryHistory));
 }
 function resetDailyIfNeeded(){
   const today = nowDateKey();
@@ -842,7 +845,7 @@ on('wordsList', 'click', event => {
 });
 
 on('exportBtn', 'click', () => {
-  const payload = {app:'VajehYar', version:APP_VERSION, exportedAt:new Date().toISOString(), words, game, searchHistory, practiceSessions, weeklyTests};
+  const payload = {app:'VajehYar', version:APP_VERSION, exportedAt:new Date().toISOString(), words, game, searchHistory, practiceSessions, weeklyTests, discoveryHistory};
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const anchor = document.createElement('a');
   anchor.href = URL.createObjectURL(blob);
@@ -862,6 +865,7 @@ on('importInput', 'change', async event => {
     if (Array.isArray(data.searchHistory)) searchHistory = data.searchHistory;
     if (Array.isArray(data.practiceSessions)) practiceSessions = data.practiceSessions;
     if (Array.isArray(data.weeklyTests)) weeklyTests = data.weeklyTests;
+    if (data.discoveryHistory && typeof data.discoveryHistory === 'object') discoveryHistory = data.discoveryHistory;
     persist();
     refreshAll();
     toast('Backup restored successfully.');
@@ -893,7 +897,7 @@ on('installBtn', 'click', async () => {
 async function registerServiceWorker(){
   if (!('serviceWorker' in navigator)) return;
   try {
-    const registration = await navigator.serviceWorker.register('./sw-v2.4.js?release=2.4.0', {updateViaCache:'none'});
+    const registration = await navigator.serviceWorker.register('./sw-v2.5.js?release=2.5.0', {updateViaCache:'none'});
     await registration.update();
   } catch (error) {
     console.warn('Service worker registration failed:', error);
@@ -1072,56 +1076,7 @@ on('dismissShareBtn', 'click', () => {
 
 
 // ---------------- Weekly mixed test (v2.4) ----------------
-const WEEKLY_WORD_BANK = [
-  {word:'adapt',level:'A2',partOfSpeech:'verb',fa:'سازگار شدن؛ تطبیق دادن',definition:'to change in order to fit a new situation',example:'It took me a few weeks to adapt to the new schedule.',synonyms:['adjust','accommodate'],antonyms:['resist']},
-  {word:'afford',level:'A2',partOfSpeech:'verb',fa:'از عهده هزینه برآمدن',definition:'to have enough money or time for something',example:'We cannot afford to waste more time.',synonyms:['manage'],antonyms:[]},
-  {word:'aware',level:'A2',partOfSpeech:'adjective',fa:'آگاه؛ مطلع',definition:'knowing that something exists or is happening',example:'She was aware of the risks before she agreed.',synonyms:['conscious','informed'],antonyms:['unaware']},
-  {word:'benefit',level:'A2',partOfSpeech:'noun',fa:'فایده؛ مزیت',definition:'a helpful or useful effect',example:'Regular practice has a clear benefit for memory.',synonyms:['advantage','gain'],antonyms:['drawback']},
-  {word:'compare',level:'A2',partOfSpeech:'verb',fa:'مقایسه کردن',definition:'to examine two or more things to see how they are similar or different',example:'Compare the two plans before making a decision.',synonyms:['contrast','evaluate'],antonyms:[]},
-  {word:'depend',level:'A2',partOfSpeech:'verb',fa:'بستگی داشتن',definition:'to be decided or influenced by something else',example:'The result will depend on how consistently you practise.',synonyms:['rely'],antonyms:[]},
-  {word:'effort',level:'A2',partOfSpeech:'noun',fa:'تلاش',definition:'physical or mental energy used to achieve something',example:'Learning a language requires steady effort.',synonyms:['attempt','work'],antonyms:['idleness']},
-  {word:'improve',level:'A2',partOfSpeech:'verb',fa:'بهبود دادن؛ بهتر شدن',definition:'to become better or make something better',example:'Reading daily can improve your vocabulary.',synonyms:['enhance','develop'],antonyms:['worsen']},
-  {word:'likely',level:'A2',partOfSpeech:'adjective',fa:'محتمل',definition:'expected to happen or probably true',example:'You are more likely to remember words used in context.',synonyms:['probable'],antonyms:['unlikely']},
-  {word:'purpose',level:'A2',partOfSpeech:'noun',fa:'هدف؛ منظور',definition:'the reason for doing or creating something',example:'The purpose of the test is to reveal weak areas.',synonyms:['aim','goal'],antonyms:[]},
-  {word:'achieve',level:'B1',partOfSpeech:'verb',fa:'دستیابی پیدا کردن',definition:'to succeed in reaching a goal',example:'Small daily habits help you achieve long-term goals.',synonyms:['accomplish','attain'],antonyms:['fail']},
-  {word:'approach',level:'B1',partOfSpeech:'noun',fa:'رویکرد؛ روش',definition:'a way of dealing with a problem or task',example:'This approach combines review with active use.',synonyms:['method','strategy'],antonyms:[]},
-  {word:'assume',level:'B1',partOfSpeech:'verb',fa:'فرض کردن',definition:'to accept something as true without proof',example:'Do not assume that recognising a word means you can use it.',synonyms:['suppose','presume'],antonyms:['verify']},
-  {word:'challenge',level:'B1',partOfSpeech:'noun',fa:'چالش',definition:'a difficult task that tests ability or skill',example:'The weekly test should feel like a useful challenge.',synonyms:['test','difficulty'],antonyms:['ease']},
-  {word:'consequence',level:'B1',partOfSpeech:'noun',fa:'پیامد',definition:'a result of a particular action or situation',example:'One consequence of irregular study is rapid forgetting.',synonyms:['result','outcome'],antonyms:['cause']},
-  {word:'convince',level:'B1',partOfSpeech:'verb',fa:'متقاعد کردن',definition:'to make someone believe that something is true',example:'The evidence convinced her to change her plan.',synonyms:['persuade'],antonyms:['dissuade']},
-  {word:'efficient',level:'B1',partOfSpeech:'adjective',fa:'کارآمد',definition:'working well without wasting time or energy',example:'Spaced repetition is an efficient way to review.',synonyms:['effective','productive'],antonyms:['inefficient']},
-  {word:'encounter',level:'B1',partOfSpeech:'verb',fa:'مواجه شدن با',definition:'to meet or experience something unexpectedly',example:'You will encounter the same word in different contexts.',synonyms:['meet','face'],antonyms:['avoid']},
-  {word:'essential',level:'B1',partOfSpeech:'adjective',fa:'ضروری؛ اساسی',definition:'completely necessary or extremely important',example:'Regular review is essential for long-term memory.',synonyms:['necessary','vital'],antonyms:['optional']},
-  {word:'maintain',level:'B1',partOfSpeech:'verb',fa:'حفظ کردن',definition:'to keep something at the same level or condition',example:'A simple routine is easier to maintain.',synonyms:['preserve','sustain'],antonyms:['neglect']},
-  {word:'obvious',level:'B1',partOfSpeech:'adjective',fa:'واضح',definition:'easy to see, understand, or recognise',example:'The answer became obvious after reading the example.',synonyms:['clear','apparent'],antonyms:['unclear']},
-  {word:'reliable',level:'B1',partOfSpeech:'adjective',fa:'قابل اعتماد',definition:'consistently good and able to be trusted',example:'A reliable backup protects your saved vocabulary.',synonyms:['dependable','trustworthy'],antonyms:['unreliable']},
-  {word:'require',level:'B1',partOfSpeech:'verb',fa:'نیاز داشتن؛ مستلزم بودن',definition:'to need something or make it necessary',example:'Active recall requires more effort than recognition.',synonyms:['need','demand'],antonyms:[]},
-  {word:'variety',level:'B1',partOfSpeech:'noun',fa:'تنوع',definition:'a range of different things of the same general type',example:'A variety of question types keeps practice useful.',synonyms:['range','diversity'],antonyms:['uniformity']},
-  {word:'allocate',level:'B2',partOfSpeech:'verb',fa:'اختصاص دادن',definition:'to give a particular amount of time, money, or resources for a purpose',example:'Allocate ten minutes each day to vocabulary review.',synonyms:['assign','distribute'],antonyms:['withhold']},
-  {word:'ambiguous',level:'B2',partOfSpeech:'adjective',fa:'مبهم؛ دوپهلو',definition:'having more than one possible meaning and therefore unclear',example:'The sentence was ambiguous without more context.',synonyms:['unclear','vague'],antonyms:['unambiguous','clear']},
-  {word:'coherent',level:'B2',partOfSpeech:'adjective',fa:'منسجم',definition:'logical, clear, and forming a connected whole',example:'Try to write a coherent paragraph with the target words.',synonyms:['logical','consistent'],antonyms:['incoherent']},
-  {word:'compelling',level:'B2',partOfSpeech:'adjective',fa:'قانع‌کننده؛ گیرا',definition:'so interesting or persuasive that it holds attention',example:'She presented a compelling reason for the change.',synonyms:['persuasive','convincing'],antonyms:['unconvincing']},
-  {word:'derive',level:'B2',partOfSpeech:'verb',fa:'به دست آوردن؛ ناشی شدن',definition:'to obtain something from a particular source',example:'Many English words derive from Latin or Greek.',synonyms:['obtain','originate'],antonyms:[]},
-  {word:'diminish',level:'B2',partOfSpeech:'verb',fa:'کاهش یافتن؛ کم کردن',definition:'to become or make something smaller or less important',example:'Memory can diminish when a word is never reviewed.',synonyms:['decrease','reduce'],antonyms:['increase','expand']},
-  {word:'distinguish',level:'B2',partOfSpeech:'verb',fa:'تمایز قائل شدن',definition:'to recognise or show the difference between things',example:'Examples help you distinguish similar words.',synonyms:['differentiate','discern'],antonyms:['confuse']},
-  {word:'enhance',level:'B2',partOfSpeech:'verb',fa:'تقویت کردن؛ ارتقا دادن',definition:'to improve the quality, value, or strength of something',example:'Context can enhance your understanding of a word.',synonyms:['improve','strengthen'],antonyms:['weaken']},
-  {word:'feasible',level:'B2',partOfSpeech:'adjective',fa:'عملی؛ شدنی',definition:'possible and practical to do successfully',example:'A short daily plan is more feasible than an intense one.',synonyms:['practical','possible'],antonyms:['impractical','impossible']},
-  {word:'inevitable',level:'B2',partOfSpeech:'adjective',fa:'اجتناب‌ناپذیر',definition:'certain to happen and impossible to avoid',example:'Some forgetting is inevitable, which is why review matters.',synonyms:['unavoidable','certain'],antonyms:['avoidable']},
-  {word:'notion',level:'B2',partOfSpeech:'noun',fa:'تصور؛ مفهوم',definition:'an idea, belief, or understanding of something',example:'The notion that talent matters more than practice is misleading.',synonyms:['idea','concept'],antonyms:[]},
-  {word:'retain',level:'B2',partOfSpeech:'verb',fa:'حفظ کردن؛ به خاطر سپردن',definition:'to keep or continue to have something',example:'Retrieval practice helps you retain vocabulary.',synonyms:['keep','preserve'],antonyms:['lose','forget']},
-  {word:'subtle',level:'B2',partOfSpeech:'adjective',fa:'ظریف؛ نامحسوس',definition:'not obvious and requiring careful attention to notice',example:'There is a subtle difference between the two expressions.',synonyms:['delicate','nuanced'],antonyms:['obvious']},
-  {word:'valid',level:'B2',partOfSpeech:'adjective',fa:'معتبر؛ موجه',definition:'reasonable, acceptable, or based on sound evidence',example:'That is a valid concern about relying on translation.',synonyms:['sound','legitimate'],antonyms:['invalid']},
-  {word:'alleviate',level:'C1',partOfSpeech:'verb',fa:'تسکین دادن؛ کاهش دادن',definition:'to make pain, difficulty, or a problem less severe',example:'A clear routine can alleviate the stress of deciding what to study.',synonyms:['ease','relieve'],antonyms:['aggravate']},
-  {word:'contemplate',level:'C1',partOfSpeech:'verb',fa:'عمیقاً اندیشیدن',definition:'to think carefully about something for a long time',example:'She paused to contemplate the consequences of her choice.',synonyms:['consider','ponder'],antonyms:['dismiss']},
-  {word:'detrimental',level:'C1',partOfSpeech:'adjective',fa:'زیان‌آور',definition:'causing harm or damage',example:'Cramming can be detrimental to durable learning.',synonyms:['harmful','damaging'],antonyms:['beneficial']},
-  {word:'meticulous',level:'C1',partOfSpeech:'adjective',fa:'بسیار دقیق و موشکاف',definition:'showing great attention to every small detail',example:'He kept meticulous notes about every new expression.',synonyms:['careful','thorough'],antonyms:['careless']},
-  {word:'plausible',level:'C1',partOfSpeech:'adjective',fa:'قابل قبول؛ محتمل به نظر رسیده',definition:'seeming reasonable or likely to be true',example:'Her explanation sounded plausible but needed evidence.',synonyms:['credible','believable'],antonyms:['implausible']},
-  {word:'profound',level:'C1',partOfSpeech:'adjective',fa:'عمیق؛ ژرف',definition:'having a very great or deep effect, meaning, or importance',example:'Daily reading can have a profound effect on language ability.',synonyms:['deep','significant'],antonyms:['superficial']},
-  {word:'scrutinize',level:'C1',partOfSpeech:'verb',fa:'موشکافانه بررسی کردن',definition:'to examine something very carefully',example:'Scrutinize the sentence before choosing the closest meaning.',synonyms:['inspect','examine'],antonyms:['overlook']},
-  {word:'sporadic',level:'C1',partOfSpeech:'adjective',fa:'پراکنده و نامنظم',definition:'happening occasionally and at irregular intervals',example:'Sporadic practice produces less stable progress.',synonyms:['irregular','occasional'],antonyms:['consistent','continuous']},
-  {word:'tentative',level:'C1',partOfSpeech:'adjective',fa:'موقت؛ مردد',definition:'not certain or fixed and likely to change',example:'We made a tentative plan for the next study session.',synonyms:['provisional','uncertain'],antonyms:['definite']},
-  {word:'ubiquitous',level:'C1',partOfSpeech:'adjective',fa:'همه‌جا حاضر؛ فراگیر',definition:'seeming to be present everywhere',example:'Smartphones have become ubiquitous in modern life.',synonyms:['widespread','omnipresent'],antonyms:['rare']}
-];
+const WEEKLY_WORD_BANK = Array.isArray(window.VAJEHYAR_IELTS_BANK) ? window.VAJEHYAR_IELTS_BANK : [];
 
 function shuffle(items){
   const result=[...items];
@@ -1140,7 +1095,7 @@ function refreshWeeklyHome(){
   const best=tests.length?Math.max(...tests.map(test=>Math.round(test.correct/Math.max(1,test.total)*100))):null;
   if($('weeklyBestScore')) $('weeklyBestScore').textContent=best===null?'—':`${best}%`;
   if($('weeklyHomeStatus')) $('weeklyHomeStatus').textContent=tests.length?`${tests.length} test${tests.length===1?'':'s'} this week`:'Ready for this week';
-  if($('weeklyHomeMix')) $('weeklyHomeMix').textContent=`Resets in ${daysUntilNextWeek()} day${daysUntilNextWeek()===1?'':'s'} · includes unseen words`;
+  if($('weeklyHomeMix')) $('weeklyHomeMix').textContent=`Resets in ${daysUntilNextWeek()} day${daysUntilNextWeek()===1?'':'s'} · IELTS words, collocations & phrasal verbs`;
 }
 function prepareWeeklyTestView(){
   if(weeklyQuestions.length && weeklyQuestionIndex<weeklyQuestions.length){showWeeklyQuiz();return;}
@@ -1151,10 +1106,19 @@ function prepareWeeklyTestView(){
 }
 function updateWeeklyPlan(){
   const total=12;const personal=Math.min(words.length,Math.max(0,total-weeklyDiscoveryCount));const discovery=total-personal;
+  const focus=$('weeklyFocusSelect')?.value||'balanced';const topic=$('weeklyTopicSelect')?.value||'all';const level=$('weeklyLevelSelect')?.value||'auto';
+  const focusName={balanced:'balanced IELTS',academic:'academic vocabulary',collocation:'collocations',phrasal_verb:'phrasal verbs'}[focus]||focus;
   if($('weeklyPlanText')) $('weeklyPlanText').textContent=`${personal} personal question${personal===1?'':'s'} · ${discovery} discovery question${discovery===1?'':'s'}`;
-  if($('weeklyPlanNote')) $('weeklyPlanNote').textContent=words.length?`Built from your ${words.length} saved word${words.length===1?'':'s'}, with unseen vocabulary added automatically.`:'Your library is empty, so this test will be a discovery-only challenge.';
+  if($('weeklyPlanNote')) $('weeklyPlanNote').textContent=`Discovery focus: ${focusName} · ${level==='auto'?'adaptive B2/C1':level}${topic==='all'?'':` · ${topic}`}. Recently seen items are deprioritized automatically.`;
+  if($('weeklyBankCount')) $('weeklyBankCount').textContent=WEEKLY_WORD_BANK.length;
+  if($('weeklyAcademicCount')) $('weeklyAcademicCount').textContent=WEEKLY_WORD_BANK.filter(item=>item.entryType==='academic').length;
+  if($('weeklyCollocationCount')) $('weeklyCollocationCount').textContent=WEEKLY_WORD_BANK.filter(item=>item.entryType==='collocation').length;
+  if($('weeklyPhrasalCount')) $('weeklyPhrasalCount').textContent=WEEKLY_WORD_BANK.filter(item=>item.entryType==='phrasal_verb').length;
 }
 on('weeklyDiscoveryOptions','click',event=>{const button=event.target.closest('[data-count]');if(!button)return;weeklyDiscoveryCount=Number(button.dataset.count);document.querySelectorAll('#weeklyDiscoveryOptions [data-count]').forEach(item=>item.classList.toggle('active',item===button));updateWeeklyPlan();});
+on('weeklyLevelSelect','change',updateWeeklyPlan);
+on('weeklyFocusSelect','change',updateWeeklyPlan);
+on('weeklyTopicSelect','change',updateWeeklyPlan);
 on('beginWeeklyTestBtn','click',startWeeklyTest);
 on('weeklyNewTestBtn','click',()=>{weeklyQuestions=[];weeklyAnswers=[];weeklyQuestionIndex=0;prepareWeeklyTestView();});
 on('weeklyChoices','click',event=>{if(weeklyQuestionAnswered)return;const button=event.target.closest('[data-choice]');if(!button)return;weeklySelectedChoice=button.dataset.choice;document.querySelectorAll('#weeklyChoices [data-choice]').forEach(item=>item.classList.toggle('selected',item===button));});
@@ -1164,13 +1128,33 @@ on('weeklyAnswerInput','keydown',event=>{if(event.key==='Enter'){event.preventDe
 on('weeklyAudioBtn','click',()=>{const question=weeklyQuestions[weeklyQuestionIndex];if(question)speak(question.answer,question.audio||'');});
 on('weeklyDiscoveryWords','click',event=>{const button=event.target.closest('[data-add-discovery]');if(!button)return;addDiscoveryWord(button.dataset.addDiscovery,button);});
 
+function discoveryAccuracy(){
+  const attempts=Object.values(discoveryHistory||{}).reduce((sum,item)=>sum+Number(item.seenCount||0),0);
+  const correct=Object.values(discoveryHistory||{}).reduce((sum,item)=>sum+Number(item.correctCount||0),0);
+  return attempts?correct/attempts:0.62;
+}
+function daysSinceTimestamp(timestamp){return timestamp?Math.max(0,(Date.now()-timestamp)/86400000):9999;}
+function autoLevelBonus(item){
+  const accuracy=discoveryAccuracy();
+  if(accuracy>=0.78)return item.level==='C1'?28:item.level==='B2'?24:item.level==='B1'?6:0;
+  if(accuracy<0.52)return item.level==='B1'?28:item.level==='B2'?16:item.level==='C1'?-8:0;
+  return item.level==='B2'?30:item.level==='C1'?15:item.level==='B1'?12:0;
+}
+function discoveryScore(item){
+  const key=normalizeWord(item.word);const h=discoveryHistory[key]||{};const seen=Number(h.seenCount||0);const correct=Number(h.correctCount||0);const age=daysSinceTimestamp(h.lastSeen);
+  const unseenBonus=seen===0?120:0;const missedBonus=seen?Math.max(0,1-correct/seen)*55:0;const recencyPenalty=age<7?90:age<21?45:age<35?18:0;
+  return unseenBonus+missedBonus+Math.min(age,90)*0.45+autoLevelBonus(item)-recencyPenalty+Math.random()*8;
+}
 function discoveryPool(){
-  const saved=new Set(words.map(item=>normalizeWord(item.word)));const level=$('weeklyLevelSelect')?.value||'auto';
+  const saved=new Set(words.map(item=>normalizeWord(item.word)));const level=$('weeklyLevelSelect')?.value||'auto';const focus=$('weeklyFocusSelect')?.value||'balanced';const topic=$('weeklyTopicSelect')?.value||'all';
   let pool=WEEKLY_WORD_BANK.filter(item=>!saved.has(normalizeWord(item.word)));
-  if(level!=='auto') pool=pool.filter(item=>item.level===level);
-  else pool=pool.filter(item=>['A2','B1','B2'].includes(item.level));
-  if(pool.length<12) pool=WEEKLY_WORD_BANK.filter(item=>!saved.has(normalizeWord(item.word)));
-  return shuffle(pool);
+  if(level!=='auto')pool=pool.filter(item=>item.level===level);
+  else pool=pool.filter(item=>['B1','B2','C1'].includes(item.level));
+  if(focus!=='balanced')pool=pool.filter(item=>item.entryType===focus);
+  if(topic!=='all')pool=pool.filter(item=>item.topic===topic);
+  if(pool.length<12){pool=WEEKLY_WORD_BANK.filter(item=>!saved.has(normalizeWord(item.word)));if(level!=='auto')pool=pool.filter(item=>item.level===level);if(focus!=='balanced')pool=pool.filter(item=>item.entryType===focus);}
+  if(pool.length<12)pool=WEEKLY_WORD_BANK.filter(item=>!saved.has(normalizeWord(item.word)));
+  return pool.sort((a,b)=>discoveryScore(b)-discoveryScore(a));
 }
 function startWeeklyTest(){
   const total=12;const requested=Math.min(total,weeklyDiscoveryCount);const personalCount=Math.min(words.length,total-requested);const discoveryCount=total-personalCount;
@@ -1186,11 +1170,18 @@ function showWeeklyQuiz(){
 function randomDistractors(correct, values, count=3){
   return shuffle(unique(values).filter(value=>normalizeWord(value)!==normalizeWord(correct))).slice(0,count);
 }
-function bankWordDistractors(correct){return randomDistractors(correct,WEEKLY_WORD_BANK.map(item=>item.word),3);}
+function bankWordDistractors(correct,entryType=''){const pool=entryType?WEEKLY_WORD_BANK.filter(item=>item.entryType===entryType):WEEKLY_WORD_BANK;return randomDistractors(correct,pool.map(item=>item.word),3);}
 function bankFaDistractors(correct){return randomDistractors(correct,WEEKLY_WORD_BANK.map(item=>item.fa),3);}
 function makeChoices(correct,distractors){return shuffle(unique([correct,...distractors]).slice(0,4));}
 function blankSentence(sentence,word){
   const regex=new RegExp(`\\b${escapeRegExp(word)}\\b`,'i');return regex.test(sentence||'')?sentence.replace(regex,'_____'):`Complete with the target word: _____`;
+}
+function phraseCompletion(item){
+  const tokens=String(item.word||'').split(/\s+/);if(tokens.length<2)return null;
+  const blankIndex=item.entryType==='phrasal_verb'?tokens.length-1:Math.floor(Math.random()*tokens.length);
+  const answer=tokens[blankIndex];const question=tokens.map((token,index)=>index===blankIndex?'_____':token).join(' ');
+  const tokenPool=WEEKLY_WORD_BANK.filter(other=>other.entryType===item.entryType).flatMap(other=>String(other.word||'').split(/\s+/));
+  return {question,answer,choices:makeChoices(answer,randomDistractors(answer,tokenPool,3))};
 }
 function personalQuestionTypes(word){
   const types=['definition-choice','reverse-input','listening-input'];
@@ -1216,23 +1207,24 @@ function buildPersonalQuestion(word,index){
   const correct=word.word;return {...base,ui:'choice',label:'Definition',prompt:'Which word matches this definition?',question:word.enDefinition||word.faMeaning,choices:makeChoices(correct,[...words.map(item=>item.word),...bankWordDistractors(correct)]),accepted:[correct]};
 }
 function buildDiscoveryQuestion(item,index){
-  const patterns=['definition-choice','cloze-choice','synonym-choice','antonym-choice','persian-choice'];let type=patterns[index%patterns.length];
-  if(type==='antonym-choice'&&!item.antonyms.length)type='definition-choice';if(type==='synonym-choice'&&!item.synonyms.length)type='definition-choice';
-  const base={id:`d-${item.word}-${index}`,source:'discovery',discovery:item,type,wordRef:item,answer:item.word,label:'Discovery',definition:item.definition,fa:item.fa,example:item.example,synonyms:item.synonyms,antonyms:item.antonyms,explanation:`${item.word} (${item.level}) — ${item.fa}. ${item.definition}`};
-  if(type==='cloze-choice')return {...base,ui:'choice',answer:item.word,label:'Sentence completion',prompt:'Choose the word that completes the sentence.',question:blankSentence(item.example,item.word),choices:makeChoices(item.word,bankWordDistractors(item.word)),accepted:[item.word]};
-  if(type==='synonym-choice'){
-    const correct=item.synonyms[0];return {...base,ui:'choice',answer:correct,label:'Synonym',prompt:`Choose the closest synonym for “${item.word}”.`,question:item.word,choices:makeChoices(correct,bankWordDistractors(correct)),accepted:[correct]};
+  const entryType=item.entryType||'academic';
+  let patterns=entryType==='academic'?['definition-choice','cloze-choice','persian-choice','collocation-choice']:entryType==='collocation'?['phrase-definition','phrase-completion','persian-choice','cloze-choice']:['phrase-definition','particle-completion','persian-choice','cloze-choice'];
+  const type=patterns[index%patterns.length];
+  const typeLabel=entryType==='collocation'?'Collocation':entryType==='phrasal_verb'?'Phrasal verb':'Academic word';
+  const base={id:`d-${item.word}-${index}`,source:'discovery',discovery:item,type,wordRef:item,answer:item.word,label:typeLabel,definition:item.definition,fa:item.fa,example:item.example,synonyms:item.synonyms||[],antonyms:item.antonyms||[],explanation:`${item.word} (${item.level} · ${typeLabel}) — ${item.fa}. ${item.definition}`};
+  if(type==='phrase-completion'||type==='particle-completion'){
+    const completion=phraseCompletion(item);if(completion)return {...base,ui:'choice',answer:completion.answer,label:type==='particle-completion'?'Phrasal particle':'Collocation completion',prompt:'Choose the missing word in this natural expression.',question:completion.question,choices:completion.choices,accepted:[completion.answer]};
   }
-  if(type==='antonym-choice'){
-    const correct=item.antonyms[0];return {...base,ui:'choice',answer:correct,label:'Antonym',prompt:`Choose the best antonym for “${item.word}”.`,question:item.word,choices:makeChoices(correct,bankWordDistractors(correct)),accepted:[correct]};
-  }
+  if(type==='phrase-definition')return {...base,ui:'choice',answer:item.word,label:typeLabel,prompt:`Which ${entryType==='phrasal_verb'?'phrasal verb':'collocation'} matches this meaning?`,question:item.definition,choices:makeChoices(item.word,bankWordDistractors(item.word,entryType)),accepted:[item.word]};
+  if(type==='cloze-choice')return {...base,ui:'choice',answer:item.word,label:'Sentence completion',prompt:'Choose the expression that completes the sentence.',question:blankSentence(item.example,item.word),choices:makeChoices(item.word,bankWordDistractors(item.word,entryType)),accepted:[item.word]};
+  if(type==='collocation-choice'&&(item.collocations||[]).length){const correct=item.collocations[0];const all=WEEKLY_WORD_BANK.filter(x=>x.entryType==='academic').flatMap(x=>x.collocations||[]);return {...base,ui:'choice',answer:correct,label:'Collocation',prompt:`Choose a natural collocation with “${item.word}”.`,question:item.word,choices:makeChoices(correct,randomDistractors(correct,all,3)),accepted:[correct]};}
   if(type==='persian-choice')return {...base,ui:'choice',answer:item.fa,label:'Meaning',prompt:`Choose the Persian meaning of “${item.word}”.`,question:item.word,choices:makeChoices(item.fa,bankFaDistractors(item.fa)),accepted:[item.fa]};
-  return {...base,ui:'choice',answer:item.word,label:'Definition',prompt:'Which word matches this definition?',question:item.definition,choices:makeChoices(item.word,bankWordDistractors(item.word)),accepted:[item.word]};
+  return {...base,ui:'choice',answer:item.word,label:'Definition',prompt:'Which academic word matches this definition?',question:item.definition,choices:makeChoices(item.word,bankWordDistractors(item.word,'academic')),accepted:[item.word]};
 }
 function showWeeklyQuestion(){
   const question=weeklyQuestions[weeklyQuestionIndex];if(!question)return;
   weeklyQuestionAnswered=false;weeklySelectedChoice=null;
-  if($('weeklyQuestionSource')){$('weeklyQuestionSource').textContent=question.source==='discovery'?'NEW WORD':'YOUR WORD';$('weeklyQuestionSource').classList.toggle('discovery',question.source==='discovery');}
+  if($('weeklyQuestionSource')){const type=question.discovery?.entryType||'';$('weeklyQuestionSource').textContent=question.source==='discovery'?(type==='collocation'?'NEW COLLOCATION':type==='phrasal_verb'?'NEW PHRASAL VERB':'NEW WORD'):'YOUR WORD';$('weeklyQuestionSource').className=`weekly-source-badge ${question.source==='discovery'?'discovery':''} ${type==='collocation'?'collocation':''} ${type==='phrasal_verb'?'phrasal':''}`.trim();}
   if($('weeklyQuestionType'))$('weeklyQuestionType').textContent=question.label;
   if($('weeklyCounter'))$('weeklyCounter').textContent=`${weeklyQuestionIndex+1} / ${weeklyQuestions.length}`;
   if($('weeklyProgress'))$('weeklyProgress').style.width=`${weeklyQuestionIndex/weeklyQuestions.length*100}%`;
@@ -1255,6 +1247,7 @@ function submitWeeklyAnswer(){
   const response=question.ui==='choice'?weeklySelectedChoice:$('weeklyAnswerInput')?.value.trim();if(!response){toast('Choose or type an answer first.');return;}
   const correct=answerMatches(response,question.accepted);weeklyQuestionAnswered=true;
   weeklyAnswers.push({questionId:question.id,source:question.source,type:question.label,word:question.wordRef.word,correct,response,answer:question.answer,discovery:question.discovery||null,explanation:question.explanation});
+  if(question.source==='discovery'&&question.discovery){const key=normalizeWord(question.discovery.word);const h=discoveryHistory[key]||{seenCount:0,correctCount:0,wrongCount:0};h.seenCount+=1;h.correctCount+=correct?1:0;h.wrongCount+=correct?0:1;h.lastSeen=Date.now();h.lastResult=correct?'correct':'wrong';h.entryType=question.discovery.entryType;h.level=question.discovery.level;discoveryHistory[key]=h;persist();}
   if(question.ui==='choice')document.querySelectorAll('#weeklyChoices [data-choice]').forEach(button=>{button.disabled=true;const value=button.dataset.choice;button.classList.toggle('correct',answerMatches(value,question.accepted));button.classList.toggle('wrong',value===weeklySelectedChoice&&!answerMatches(value,question.accepted));});
   const feedback=$('weeklyFeedback');if(feedback){feedback.className=`weekly-feedback ${correct?'correct':'incorrect'}`;feedback.innerHTML=`<strong>${correct?'Correct!':'Not quite.'}</strong><p>${escapeHtml(question.explanation)}</p>`;}
   $('weeklySubmitBtn')?.classList.add('hidden');$('weeklyNextBtn')?.classList.remove('hidden');$('weeklyProgress').style.width=`${(weeklyQuestionIndex+1)/weeklyQuestions.length*100}%`;
@@ -1278,13 +1271,14 @@ function renderWeeklyResults(session){
   if($('weeklyDiscoveryResult'))$('weeklyDiscoveryResult').textContent=`${session.discoveryCorrect}/${session.discoveryTotal}`;
   if($('weeklyXpResult'))$('weeklyXpResult').textContent=session.xp;
   const discoveryItems=unique(session.answers.filter(a=>a.discovery).map(a=>a.discovery.word)).map(word=>WEEKLY_WORD_BANK.find(item=>item.word===word)).filter(Boolean);
-  if($('weeklyDiscoveryWords'))$('weeklyDiscoveryWords').innerHTML=discoveryItems.length?discoveryItems.map(item=>{const saved=words.some(word=>normalizeWord(word.word)===normalizeWord(item.word));return `<article class="discovery-word-card"><div><div class="word-level-row"><h3>${escapeHtml(item.word)}</h3><span>${item.level}</span></div><p class="persian-text" dir="rtl">${escapeHtml(item.fa)}</p><p>${escapeHtml(item.definition)}</p><blockquote>${escapeHtml(item.example)}</blockquote></div><button data-add-discovery="${escapeHtml(item.word)}" class="${saved?'secondary':'primary'}" ${saved?'disabled':''}>${saved?'Saved':'Add to library'}</button></article>`;}).join(''):'<p class="muted">This test did not include discovery words.</p>';
+  if($('weeklyDiscoveryWords'))$('weeklyDiscoveryWords').innerHTML=discoveryItems.length?discoveryItems.map(item=>{const saved=words.some(word=>normalizeWord(word.word)===normalizeWord(item.word));return `<article class="discovery-word-card"><div><div class="word-level-row"><h3>${escapeHtml(item.word)}</h3><span>${item.level}</span></div><div class="discovery-meta"><span>${escapeHtml(item.entryType==='phrasal_verb'?'Phrasal verb':item.entryType||'Academic')}</span><span>${escapeHtml(item.topic||'general')}</span></div><p class="persian-text" dir="rtl">${escapeHtml(item.fa)}</p><p>${escapeHtml(item.definition)}</p><blockquote>${escapeHtml(item.example)}</blockquote>${(item.collocations||[]).length?`<div class="collocation-list">${item.collocations.slice(0,3).map(value=>`<span>${escapeHtml(value)}</span>`).join('')}</div>`:''}</div><button data-add-discovery="${escapeHtml(item.word)}" class="${saved?'secondary':'primary'}" ${saved?'disabled':''}>${saved?'Saved':'Add to library'}</button></article>`;}).join(''):'<p class="muted">This test did not include discovery words.</p>';
   if($('weeklyBreakdownSummary'))$('weeklyBreakdownSummary').textContent=`${session.answers.filter(a=>!a.correct).length} to revisit`;
   if($('weeklyBreakdown'))$('weeklyBreakdown').innerHTML=session.answers.map((answer,index)=>`<article class="breakdown-row ${answer.correct?'correct':'incorrect'}"><span>${answer.correct?'✓':'×'}</span><div><strong>${index+1}. ${escapeHtml(answer.word)}</strong><small>${escapeHtml(answer.type)} · ${answer.source==='discovery'?'Discovery':'Your library'}</small><p>${escapeHtml(answer.explanation)}</p></div></article>`).join('');
 }
 function addDiscoveryWord(wordValue,button){
   const item=WEEKLY_WORD_BANK.find(entry=>normalizeWord(entry.word)===normalizeWord(wordValue));if(!item)return;if(words.some(word=>normalizeWord(word.word)===normalizeWord(item.word))){toast('This word is already in your library.');return;}
-  words.unshift({id:crypto.randomUUID?crypto.randomUUID():`word-${Date.now()}`,word:item.word,phonetic:'',audio:'',partOfSpeech:item.partOfSpeech,faMeaning:item.fa,enDefinition:item.definition,example:item.example,contextSentence:item.example,sourceTitle:'VajehYar Weekly Discovery',sourceType:'Weekly Test',sourceUrlInput:'',note:'',synonyms:item.synonyms,antonyms:item.antonyms,related:[],family:[],rootCandidates:[],box:1,nextReview:todayStart(),learned:false,createdAt:Date.now(),updatedAt:Date.now(),reviewCount:0,correctCount:0,wrongCount:0});
+  words.unshift({id:crypto.randomUUID?crypto.randomUUID():`word-${Date.now()}`,word:item.word,phonetic:'',audio:'',partOfSpeech:item.partOfSpeech,faMeaning:item.fa,enDefinition:item.definition,example:item.example,contextSentence:item.example,sourceTitle:'VajehYar IELTS Discovery Bank',sourceType:item.entryType==='collocation'?'Collocation':item.entryType==='phrasal_verb'?'Phrasal Verb':'Weekly Test',sourceUrlInput:'',note:`${item.level||''} · ${item.topic||'general'} · IELTS Band 7 path`,synonyms:item.synonyms||[],antonyms:item.antonyms||[],related:[],family:[],rootCandidates:[],collocations:item.collocations||[],entryType:item.entryType||'academic',topic:item.topic||'general',cefr:item.level,box:1,nextReview:todayStart(),learned:false,createdAt:Date.now(),updatedAt:Date.now(),reviewCount:0,correctCount:0,wrongCount:0});
+  const historyKey=normalizeWord(item.word);discoveryHistory[historyKey]={...(discoveryHistory[historyKey]||{}),savedAt:Date.now(),saved:true};
   awardXp(5,'Discovery word saved');persist();if(button){button.textContent='Saved';button.disabled=true;button.className='secondary';}refreshAll();
 }
 function renderWeeklyHistory(){

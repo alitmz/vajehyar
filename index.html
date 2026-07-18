@@ -7,13 +7,13 @@
   <meta name="description" content="VajehYar — a personal dictionary, Leitner trainer, and vocabulary game.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="./manifest.webmanifest?release=2.4.0">
+  <link rel="manifest" href="./manifest.webmanifest?release=2.5.0">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles-v2.4.css?release=2.4.0">
+  <link rel="stylesheet" href="./styles-v2.5.css?release=2.5.0">
   <title>VajehYar</title>
 </head>
 <body>
@@ -340,17 +340,24 @@
     <section id="weeklyTestView" class="view">
       <div class="weekly-topline">
         <button id="weeklyBackBtn" class="text-button">← Home</button>
-        <div><span class="eyebrow">WEEKLY TEST</span><h2>Mixed vocabulary challenge</h2></div>
+        <div><span class="eyebrow">WEEKLY TEST</span><h2>IELTS Band 7 vocabulary challenge</h2></div>
       </div>
 
       <div id="weeklySetup" class="weekly-layout">
         <div class="card weekly-intro-card">
           <div class="weekly-intro-icon">🧩</div>
           <div>
-            <span class="eyebrow">12 QUESTIONS</span>
+            <span class="eyebrow">IELTS BAND 7 PATH</span>
             <h2>Review what you know. Discover what comes next.</h2>
-            <p class="muted">The test mixes meanings, definitions, spelling, listening, sentence completion, synonyms, and antonyms. Discovery questions come from an offline curated word bank.</p>
+            <p class="muted">The test mixes academic vocabulary, natural collocations, and useful phrasal verbs. Selection adapts to your level, recent exposure, and past accuracy.</p>
           </div>
+        </div>
+
+        <div class="bank-stats-strip card">
+          <div><strong id="weeklyBankCount">687</strong><span>testable items</span></div>
+          <div><strong id="weeklyAcademicCount">463</strong><span>academic words</span></div>
+          <div><strong id="weeklyCollocationCount">130</strong><span>collocations</span></div>
+          <div><strong id="weeklyPhrasalCount">94</strong><span>phrasal verbs</span></div>
         </div>
 
         <div class="weekly-config-grid">
@@ -366,13 +373,39 @@
             <span class="eyebrow">DISCOVERY LEVEL</span>
             <h3>Choose the difficulty</h3>
             <select id="weeklyLevelSelect">
-              <option value="auto">Auto mix</option>
-              <option value="A2">A2 · Everyday foundation</option>
-              <option value="B1">B1 · Intermediate</option>
-              <option value="B2">B2 · Upper-intermediate</option>
-              <option value="C1">C1 · Advanced</option>
+              <option value="auto">IELTS 7 adaptive mix</option>
+              <option value="B1">B1 · Build the foundation</option>
+              <option value="B2">B2 · Core Band 7 range</option>
+              <option value="C1">C1 · Advanced precision</option>
             </select>
-            <p class="muted mini">Auto mix gradually favors B1 and B2 vocabulary.</p>
+            <p class="muted mini">The adaptive mix favors B2 and gradually introduces C1 when your discovery accuracy is strong.</p>
+          </div>
+          <div class="card">
+            <span class="eyebrow">CONTENT FOCUS</span>
+            <h3>What should the test emphasize?</h3>
+            <select id="weeklyFocusSelect">
+              <option value="balanced">Balanced IELTS mix</option>
+              <option value="academic">Academic vocabulary</option>
+              <option value="collocation">Collocations</option>
+              <option value="phrasal_verb">Phrasal verbs</option>
+            </select>
+            <p class="muted mini">Balanced mode mixes all three and gives extra weight to academic vocabulary.</p>
+          </div>
+          <div class="card">
+            <span class="eyebrow">TOPIC</span>
+            <h3>Choose an IELTS topic</h3>
+            <select id="weeklyTopicSelect">
+              <option value="all">All IELTS topics</option>
+              <option value="education">Education</option>
+              <option value="environment">Environment</option>
+              <option value="technology">Technology</option>
+              <option value="health">Health</option>
+              <option value="society">Society</option>
+              <option value="economy">Economy</option>
+              <option value="work">Work</option>
+              <option value="research">Research & academic writing</option>
+            </select>
+            <p class="muted mini">Topic filters apply to discovery questions; personal questions still come from your own library.</p>
           </div>
         </div>
 
@@ -380,7 +413,7 @@
           <div>
             <span class="eyebrow">TEST PLAN</span>
             <h3 id="weeklyPlanText">8 personal questions · 4 discovery questions</h3>
-            <p id="weeklyPlanNote" class="muted">Your exact mix adapts to the words available in your library.</p>
+            <p id="weeklyPlanNote" class="muted">Your exact mix adapts to your library, past discovery accuracy, and recently seen items.</p>
           </div>
           <button id="beginWeeklyTestBtn" class="primary">Begin test</button>
         </div>
@@ -434,7 +467,7 @@
         </div>
 
         <div class="card">
-          <div class="section-heading compact"><div><span class="eyebrow">DISCOVERY WORDS</span><h3>Words introduced in this test</h3></div><span class="helper">Add the useful ones to your Leitner system</span></div>
+          <div class="section-heading compact"><div><span class="eyebrow">DISCOVERY WORDS</span><h3>IELTS items introduced in this test</h3></div><span class="helper">Save useful words, collocations, or phrasal verbs</span></div>
           <div id="weeklyDiscoveryWords" class="discovery-results"></div>
         </div>
 
@@ -485,7 +518,7 @@
         <div class="card">
           <span class="eyebrow">APP</span>
           <h2>How it works</h2>
-          <p class="muted">New dictionary searches need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
+          <p class="muted">New dictionary searches need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, adaptive discovery history, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
         </div>
       </div>
     </section>
@@ -501,6 +534,6 @@
 
   <div id="toast" class="toast" role="status"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
-  <script src="./bootstrap-v2.4.js?release=2.4.0"></script>
+  <script src="./bootstrap-v2.5.js?release=2.5.0"></script>
 </body>
 </html>
