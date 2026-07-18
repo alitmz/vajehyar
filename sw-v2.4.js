@@ -1,11 +1,11 @@
-const CACHE = 'vajehyar-v2.3.0';
+const CACHE = 'vajehyar-v2.4.0';
 const CORE = [
   './',
   './index.html',
-  './styles-v2.3.css?release=2.3.0',
-  './bootstrap-v2.3.js?release=2.3.0',
-  './app-v2.3.js?release=2.3.0',
-  './manifest.webmanifest?release=2.3.0',
+  './styles-v2.4.css?release=2.4.0',
+  './bootstrap-v2.4.js?release=2.4.0',
+  './app-v2.4.js?release=2.4.0',
+  './manifest.webmanifest?release=2.4.0',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];
@@ -50,7 +50,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  const isCode = /(?:app-v2\.3|bootstrap-v2\.3|styles-v2\.3|manifest\.webmanifest)/.test(url.pathname);
+  const isCode = /(?:app-v2\.4|bootstrap-v2\.4|styles-v2\.4|manifest\.webmanifest)/.test(url.pathname);
   if (isCode) {
     event.respondWith(networkFirst(event.request));
     return;

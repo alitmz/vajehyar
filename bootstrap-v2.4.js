@@ -1,5 +1,5 @@
 (async function bootVajehYar(){
-  const RELEASE = '2.2.0';
+  const RELEASE = '2.4.0';
   const MARKER = `vajehyar_release_${RELEASE}`;
   try {
     if (localStorage.getItem(MARKER) !== 'ready') {
@@ -18,7 +18,7 @@
   }
 
   const script = document.createElement('script');
-  script.src = `./app-v2.2.js?release=${RELEASE}`;
+  script.src = `./app-v2.4.js?release=${RELEASE}`;
   script.defer = true;
   script.onerror = () => {
     const message = document.createElement('div');

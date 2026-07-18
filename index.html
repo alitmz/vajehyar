@@ -7,13 +7,13 @@
   <meta name="description" content="VajehYar — a personal dictionary, Leitner trainer, and vocabulary game.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="./manifest.webmanifest?release=2.3.0">
+  <link rel="manifest" href="./manifest.webmanifest?release=2.4.0">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles-v2.3.css?release=2.3.0">
+  <link rel="stylesheet" href="./styles-v2.4.css?release=2.4.0">
   <title>VajehYar</title>
 </head>
 <body>
@@ -88,6 +88,23 @@
         <div class="active-practice-action">
           <div class="practice-count"><strong id="todayWordsCount">0</strong><span>words ready</span></div>
           <button id="startPracticeBtn" class="secondary">Practice today's words →</button>
+        </div>
+      </div>
+
+
+      <div class="card weekly-card">
+        <div class="weekly-card-copy">
+          <span class="eyebrow">WEEKLY CHALLENGE</span>
+          <h3>A mixed test that grows with you.</h3>
+          <p class="muted">Practice your own vocabulary and discover carefully selected words you have not saved yet.</p>
+          <div class="weekly-meta-row">
+            <span id="weeklyHomeStatus" class="weekly-status-pill">Ready</span>
+            <span id="weeklyHomeMix" class="mini muted">Personal + discovery questions</span>
+          </div>
+        </div>
+        <div class="weekly-card-score">
+          <div class="weekly-score-orb"><strong id="weeklyBestScore">—</strong><span>best this week</span></div>
+          <button id="startWeeklyFromHomeBtn" class="primary">Start weekly test →</button>
         </div>
       </div>
 
@@ -319,6 +336,115 @@
       </div>
     </section>
 
+
+    <section id="weeklyTestView" class="view">
+      <div class="weekly-topline">
+        <button id="weeklyBackBtn" class="text-button">← Home</button>
+        <div><span class="eyebrow">WEEKLY TEST</span><h2>Mixed vocabulary challenge</h2></div>
+      </div>
+
+      <div id="weeklySetup" class="weekly-layout">
+        <div class="card weekly-intro-card">
+          <div class="weekly-intro-icon">🧩</div>
+          <div>
+            <span class="eyebrow">12 QUESTIONS</span>
+            <h2>Review what you know. Discover what comes next.</h2>
+            <p class="muted">The test mixes meanings, definitions, spelling, listening, sentence completion, synonyms, and antonyms. Discovery questions come from an offline curated word bank.</p>
+          </div>
+        </div>
+
+        <div class="weekly-config-grid">
+          <div class="card">
+            <span class="eyebrow">DISCOVERY MIX</span>
+            <h3>New words in this test</h3>
+            <div id="weeklyDiscoveryOptions" class="choice-tabs">
+              <button data-count="2">2</button><button data-count="4" class="active">4</button><button data-count="6">6</button><button data-count="8">8</button>
+            </div>
+            <p class="muted mini">If your library is small, VajehYar automatically fills the remaining questions with new words.</p>
+          </div>
+          <div class="card">
+            <span class="eyebrow">DISCOVERY LEVEL</span>
+            <h3>Choose the difficulty</h3>
+            <select id="weeklyLevelSelect">
+              <option value="auto">Auto mix</option>
+              <option value="A2">A2 · Everyday foundation</option>
+              <option value="B1">B1 · Intermediate</option>
+              <option value="B2">B2 · Upper-intermediate</option>
+              <option value="C1">C1 · Advanced</option>
+            </select>
+            <p class="muted mini">Auto mix gradually favors B1 and B2 vocabulary.</p>
+          </div>
+        </div>
+
+        <div class="card weekly-start-card">
+          <div>
+            <span class="eyebrow">TEST PLAN</span>
+            <h3 id="weeklyPlanText">8 personal questions · 4 discovery questions</h3>
+            <p id="weeklyPlanNote" class="muted">Your exact mix adapts to the words available in your library.</p>
+          </div>
+          <button id="beginWeeklyTestBtn" class="primary">Begin test</button>
+        </div>
+
+        <div class="card">
+          <div class="section-heading compact"><div><span class="eyebrow">HISTORY</span><h3>Recent weekly tests</h3></div><span id="weeklyHistorySummary" class="helper"></span></div>
+          <div id="weeklyHistoryList" class="weekly-history"></div>
+        </div>
+      </div>
+
+      <div id="weeklyQuiz" class="card weekly-quiz hidden">
+        <div class="weekly-quiz-top">
+          <div>
+            <span id="weeklyQuestionSource" class="weekly-source-badge">YOUR WORD</span>
+            <span id="weeklyQuestionType" class="mode-chip">Meaning</span>
+          </div>
+          <span id="weeklyCounter" class="helper">1 / 12</span>
+        </div>
+        <div class="progress-track weekly-progress"><span id="weeklyProgress"></span></div>
+        <p id="weeklyQuestionPrompt" class="weekly-question-prompt"></p>
+        <h2 id="weeklyQuestionText" class="weekly-question-text"></h2>
+        <p id="weeklyQuestionClue" class="weekly-question-clue"></p>
+        <button id="weeklyAudioBtn" class="secondary weekly-audio hidden">🔊 Play word</button>
+        <div id="weeklyChoices" class="weekly-choices"></div>
+        <div id="weeklyInputPanel" class="weekly-input-panel hidden">
+          <input id="weeklyAnswerInput" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type your answer...">
+        </div>
+        <div id="weeklyFeedback" class="weekly-feedback hidden"></div>
+        <div class="weekly-quiz-actions">
+          <button id="weeklySubmitBtn" class="primary">Check answer</button>
+          <button id="weeklyNextBtn" class="primary hidden">Next question →</button>
+        </div>
+      </div>
+
+      <div id="weeklyResults" class="weekly-results hidden">
+        <div class="card weekly-result-hero">
+          <div class="weekly-result-ring"><strong id="weeklyResultPercent">0%</strong><span>accuracy</span></div>
+          <div>
+            <span class="eyebrow">TEST COMPLETE</span>
+            <h2 id="weeklyResultTitle">Strong work!</h2>
+            <p id="weeklyResultSummary" class="muted"></p>
+            <div class="weekly-result-actions"><button id="weeklyNewTestBtn" class="secondary">Take another test</button><button id="weeklyHomeBtn" class="primary">Back to Home</button></div>
+          </div>
+        </div>
+
+        <div class="weekly-result-grid">
+          <article class="card result-stat"><span>✅</span><strong id="weeklyCorrectResult">0</strong><small>Correct</small></article>
+          <article class="card result-stat"><span>📚</span><strong id="weeklyPersonalResult">0/0</strong><small>Your words</small></article>
+          <article class="card result-stat"><span>✨</span><strong id="weeklyDiscoveryResult">0/0</strong><small>Discovery</small></article>
+          <article class="card result-stat"><span>⚡</span><strong id="weeklyXpResult">0</strong><small>XP earned</small></article>
+        </div>
+
+        <div class="card">
+          <div class="section-heading compact"><div><span class="eyebrow">DISCOVERY WORDS</span><h3>Words introduced in this test</h3></div><span class="helper">Add the useful ones to your Leitner system</span></div>
+          <div id="weeklyDiscoveryWords" class="discovery-results"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-heading compact"><div><span class="eyebrow">REVIEW</span><h3>Question breakdown</h3></div><span id="weeklyBreakdownSummary" class="helper"></span></div>
+          <div id="weeklyBreakdown" class="weekly-breakdown"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="wordsView" class="view">
       <div class="card">
         <div class="library-header">
@@ -359,7 +485,7 @@
         <div class="card">
           <span class="eyebrow">APP</span>
           <h2>How it works</h2>
-          <p class="muted">New dictionary searches need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
+          <p class="muted">New dictionary searches need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
         </div>
       </div>
     </section>
@@ -375,6 +501,6 @@
 
   <div id="toast" class="toast" role="status"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
-  <script src="./bootstrap-v2.3.js?release=2.3.0"></script>
+  <script src="./bootstrap-v2.4.js?release=2.4.0"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 {
   "name": "VajehYar — Vocabulary Trainer",
   "short_name": "VajehYar",
-  "description": "A personal English dictionary, adaptive vocabulary trainer, quick share target, and active-practice journal.",
-  "start_url": "./?release=2.3.0",
+  "description": "A personal English dictionary, adaptive Leitner trainer, active-practice journal, and mixed weekly vocabulary test with discovery words.",
+  "start_url": "./?release=2.4.0",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -43,7 +43,7 @@
     {
       "name": "Dictionary",
       "short_name": "Dictionary",
-      "url": "./?release=2.3.0#search",
+      "url": "./?release=2.4.0#search",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -54,7 +54,18 @@
     {
       "name": "Review",
       "short_name": "Review",
-      "url": "./?release=2.3.0#review",
+      "url": "./?release=2.4.0#review",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Weekly Test",
+      "short_name": "Weekly Test",
+      "url": "./?release=2.4.0#weeklyTest",
       "icons": [
         {
           "src": "./icons/icon-192.png",

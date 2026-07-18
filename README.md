@@ -1,43 +1,40 @@
-# VajehYar v2.3
+# VajehYar v2.4 — Weekly Challenge
 
-VajehYar is a private, installable vocabulary-learning PWA designed for personal English study.
+VajehYar is a private, installable vocabulary-learning PWA for personal English study.
 
-## New in v2.3
+## New in v2.4
 
-- **Android Share Target:** select or share a word from supported Android apps and choose VajehYar.
-- **Context-aware saving:** save each word with the sentence where you found it, a source title/type, and an optional source link.
-- **Four review modes:** meaning recall, reverse recall, fill-in-the-blank, and listening recall.
-- **Four recall ratings:** Again, Hard, Good, and Easy with adaptive Leitner scheduling.
-- **Active Practice:** write a paragraph using today's saved or reviewed words and earn a daily XP reward.
+- **Mixed weekly test:** a 12-question challenge using several question styles.
+- **Personal questions:** the test draws from words already saved in your library.
+- **Discovery questions:** 2–8 questions can use words you have never saved before.
+- **Difficulty selection:** Auto, A2, B1, B2, or C1 discovery vocabulary.
+- **Question variety:** English definitions, Persian meanings, spelling, listening, fill-in-the-blank, synonyms, and antonyms.
+- **Weekly history:** saves accuracy, personal-word performance, discovery performance, and XP.
+- **Discovery saving:** add useful new words directly to Box 1 of your Leitner system after the test.
+- **Offline word bank:** discovery questions use a curated built-in vocabulary bank, so the weekly test does not require a server.
 
 ## Existing features
 
-- English definitions, examples, pronunciation, Persian meaning, synonyms, antonyms, related words, and word-family clues
-- Five-box Leitner system
+- Personal dictionary with English definitions, examples, pronunciation, Persian meaning, synonyms, antonyms, related words, and word-family clues
+- Save a word with its sentence, source type, source title, and source link
+- Android Share Target for quick capture from supported apps
+- Four review modes and Again / Hard / Good / Easy ratings
+- Active writing practice with today's words
 - XP, levels, daily goals, streaks, and achievements
-- Local-first storage and offline review
-- Backup and restore
-- Installable from Chrome as a standalone app
+- Local-first storage, offline review, backup, and restore
 
 ## Deploy on GitHub Pages
 
 1. Extract the ZIP.
-2. Upload all files and the `icons` folder to the root of your existing `vajehyar` repository.
-3. Replace the previous files and commit the changes.
-4. Wait for the GitHub Pages deployment to turn green.
+2. Upload every file and the `icons` folder to the root of the existing `vajehyar` repository.
+3. Replace the old files and commit the changes.
+4. Wait until the GitHub Pages deployment is green.
 5. Open:
 
-   `https://alitmz.github.io/vajehyar/?release=2.3.0`
+   `https://alitmz.github.io/vajehyar/?release=2.4.0`
 
-6. Refresh once. Do not clear site storage, because your saved vocabulary lives in the browser's local storage.
+6. Refresh once. Do not clear site storage because your saved vocabulary and progress live in the browser storage.
 
-## Quick Share on Android
+## Weekly discovery design
 
-After the updated PWA is installed:
-
-1. Select a word or text in a supported Android app.
-2. Tap **Share**.
-3. Choose **VajehYar**.
-4. VajehYar opens the Dictionary tab, searches the shared word, and carries over the shared sentence and source when available.
-
-The exact Share-menu behavior depends on the Android app sending the content.
+Discovery questions are intentionally labeled **NEW WORD**. A wrong answer is not treated as failure; the result page teaches the meaning and lets you decide whether the word is useful enough to save.
