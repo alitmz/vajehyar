@@ -1,12 +1,13 @@
-# Update to VajehYar 2.1
+# Update to VajehYar v2.2
 
 1. Extract the ZIP file.
-2. Open the `alitmz/vajehyar` repository on GitHub.
-3. Select **Add file → Upload files**.
-4. Drag all extracted files and the `icons` folder into the upload area.
-5. Commit the changes to the `main` branch.
-6. Wait for the GitHub Pages deployment indicator to become green.
-7. Open the deployed site in Chrome and refresh once.
-8. Close and reopen the installed PWA.
+2. Upload **all files and the `icons` folder** to the root of the existing `vajehyar` repository.
+3. Allow GitHub to replace files with the same names, then commit the changes.
+4. Wait until the GitHub Pages deployment is green.
+5. Open this exact URL once:
 
-The vocabulary database remains on the device because this release keeps the existing storage keys.
+   `https://alitmz.github.io/vajehyar/?release=2.2.0`
+
+6. Refresh once. The release bootstrap removes the stale v2.0/v2.1 service-worker cache without deleting your saved words, XP, or review progress.
+
+Do not clear Chrome site data, because vocabulary data is stored locally in the browser.

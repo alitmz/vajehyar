@@ -1,4 +1,4 @@
-# VajehYar
+# VajehYar v2.2 — Personal Dictionary & Leitner Trainer
 
 VajehYar is an installable Progressive Web App for building a personal English vocabulary library and reviewing words with a five-box Leitner system.
 
@@ -53,3 +53,9 @@ Do not clear site storage unless you already exported a backup, because saved wo
 ## Dictionary services
 
 The app uses public dictionary and lexical APIs. Root and word-family suggestions are estimates based on word structure and public lexical data; they should not be treated as guaranteed historical etymology. Users can edit the Persian meaning before saving.
+
+
+## v2.2 reliability fix
+- Fixed the startup `nowDateKey` initialization error that blocked all navigation tabs.
+- Uses a release bootstrap and uniquely named JavaScript/CSS files to bypass stale service-worker caches.
+- Uses network-first updates for application code while preserving offline review support.

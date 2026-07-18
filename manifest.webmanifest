@@ -1,8 +1,8 @@
 {
-  "name": "VajehYar \u2014 Vocabulary Trainer",
+  "name": "VajehYar — Vocabulary Trainer",
   "short_name": "VajehYar",
   "description": "A personal English dictionary, Leitner trainer, and vocabulary game.",
-  "start_url": "./",
+  "start_url": "./?release=2.2.0",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -27,5 +27,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "id": "./?app=vajehyar"
 }
