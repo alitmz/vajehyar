@@ -1,10 +1,12 @@
-# Update to VajehYar v2.7
+# Update to VajehYar v2.7.1
 
-1. Extract the ZIP file.
-2. Upload all extracted files and the `icons` folder to the repository root.
-3. Replace the older files and commit the changes.
-4. Wait for GitHub Pages deployment to complete.
-5. Open `https://alitmz.github.io/vajehyar/?release=2.7.0` and refresh once.
-6. Open **Cloud AI Tutor** and connect your own Groq or OpenRouter account.
+1. Extract `vajehyar-pwa-v2.7.1-ready.zip`.
+2. Open the root of your existing GitHub repository.
+3. Upload every extracted file and the `icons` folder, replacing older files.
+4. Commit the changes and wait for GitHub Pages deployment to finish.
+5. Open `https://alitmz.github.io/vajehyar/?release=2.7.1`.
+6. Refresh once.
 
-Do not put an API key in any project file. Keys entered in VajehYar are stored only in that browser and are excluded from backups.
+Do not use **Clear site data**. The new release uses the existing local-storage keys, so your words, progress, weekly tests, and AI history remain available.
+
+The new filenames (`app-v2.7.1.js`, `styles-v2.7.1.css`, and others) force browsers and installed PWAs to load the corrected quiz logic instead of a cached v2.7 file.

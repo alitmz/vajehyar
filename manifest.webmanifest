@@ -2,7 +2,7 @@
   "name": "VajehYar — Vocabulary Trainer",
   "short_name": "VajehYar",
   "description": "A personal IELTS vocabulary trainer with a smart Groq and OpenRouter AI tutor.",
-  "start_url": "./?release=2.7.0",
+  "start_url": "./?release=2.7.1",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -43,7 +43,7 @@
     {
       "name": "Dictionary",
       "short_name": "Dictionary",
-      "url": "./?release=2.7.0#search",
+      "url": "./?release=2.7.1#search",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -54,7 +54,7 @@
     {
       "name": "Review",
       "short_name": "Review",
-      "url": "./?release=2.7.0#review",
+      "url": "./?release=2.7.1#review",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -65,7 +65,7 @@
     {
       "name": "AI Tutor",
       "short_name": "AI Tutor",
-      "url": "./?release=2.7.0#aiTutor",
+      "url": "./?release=2.7.1#aiTutor",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -76,7 +76,7 @@
     {
       "name": "Weekly Test",
       "short_name": "Weekly Test",
-      "url": "./?release=2.7.0#weeklyTest",
+      "url": "./?release=2.7.1#weeklyTest",
       "icons": [
         {
           "src": "./icons/icon-192.png",

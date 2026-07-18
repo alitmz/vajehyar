@@ -7,7 +7,7 @@ const DISCOVERY_HISTORY_KEY = 'vajehyar_discovery_history_v2';
 const AI_SETTINGS_KEY = 'vajehyar_ai_settings_v1';
 const AI_HISTORY_KEY = 'vajehyar_ai_history_v1';
 const INTERVALS = [1, 2, 4, 8, 16];
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.7.1';
 
 // Helpers are intentionally declared before state initialization.
 // v2.0 initialized game state too early, which stopped all JavaScript,
@@ -938,7 +938,7 @@ on('installBtn', 'click', async () => {
 async function registerServiceWorker(){
   if (!('serviceWorker' in navigator)) return;
   try {
-    const registration = await navigator.serviceWorker.register('./sw-v2.7.js?release=2.7.0', {updateViaCache:'none'});
+    const registration = await navigator.serviceWorker.register('./sw-v2.7.1.js?release=2.7.1', {updateViaCache:'none'});
     await registration.update();
   } catch (error) {
     console.warn('Service worker registration failed:', error);
@@ -1202,10 +1202,22 @@ function discoveryPool(){
 }
 function startWeeklyTest(){
   const total=12;const requested=Math.min(total,weeklyDiscoveryCount);const personalCount=Math.min(words.length,total-requested);const discoveryCount=total-personalCount;
-  const personal=shuffle(words).slice(0,personalCount).map((item,index)=>buildPersonalQuestion(item,index));
-  const discovery=discoveryPool().slice(0,discoveryCount).map((item,index)=>buildDiscoveryQuestion(item,index));
-  weeklyQuestions=shuffle([...personal,...discovery]);weeklyAnswers=[];weeklyQuestionIndex=0;weeklyQuestionAnswered=false;weeklySelectedChoice=null;
-  if(!weeklyQuestions.length){toast('No questions are available yet.');return;}
+  const personalItems=shuffle(words).slice(0,personalCount);
+  const personal=personalItems.map((item,index)=>buildPersonalQuestion(item,index)).filter(question=>{
+    const valid=validateWeeklyQuestion(question);if(!valid)console.warn('Skipped invalid personal question',question);return valid;
+  });
+  const discoveryItems=discoveryPool();const selectedDiscovery=discoveryItems.slice(0,discoveryCount);
+  const discovery=selectedDiscovery.map((item,index)=>buildDiscoveryQuestion(item,index)).filter(Boolean);
+  let combined=[...personal,...discovery];
+  if(combined.length<total){
+    const used=new Set(selectedDiscovery.map(item=>normalizeWord(item.word)));
+    for(const item of discoveryItems){
+      if(combined.length>=total)break;if(used.has(normalizeWord(item.word)))continue;
+      const question=buildDiscoveryQuestion(item,combined.length);used.add(normalizeWord(item.word));if(question)combined.push(question);
+    }
+  }
+  weeklyQuestions=shuffle(combined.filter(validateWeeklyQuestion).slice(0,total));weeklyAnswers=[];weeklyQuestionIndex=0;weeklyQuestionAnswered=false;weeklySelectedChoice=null;
+  if(!weeklyQuestions.length){toast('No valid questions are available yet.');return;}
   showWeeklyQuiz();showWeeklyQuestion();
 }
 function showWeeklyQuiz(){
@@ -1214,22 +1226,70 @@ function showWeeklyQuiz(){
 function randomDistractors(correct, values, count=3){
   return shuffle(unique(values).filter(value=>normalizeWord(value)!==normalizeWord(correct))).slice(0,count);
 }
+const VERB_COLLOCATION_HEADS = new Set([
+  'achieve','acquire','address','allocate','analyse','bridge','collect','commit','conduct','conserve','control','develop','draw','face','gain','generate','implement','make','meet','overcome','play','pose','prevent','protect','provide','raise','reach','recycle','reduce','set','solve','tackle','take'
+]);
+function collocationRole(item){
+  if((item?.entryType||'')==='phrasal_verb')return 'verb';
+  if((item?.entryType||'')!=='collocation')return item?.partOfSpeech||'other';
+  const head=normalizeWord(item.word).split(/\s+/)[0];
+  return VERB_COLLOCATION_HEADS.has(head)?'verb':'noun';
+}
+function bankEntryDistractors(item,count=3){
+  const entryType=item?.entryType||'academic';
+  let pool=WEEKLY_WORD_BANK.filter(other=>normalizeWord(other.word)!==normalizeWord(item.word)&&other.entryType===entryType);
+  if(entryType==='academic'){
+    const matched=pool.filter(other=>(other.partOfSpeech||'')===(item.partOfSpeech||''));
+    if(matched.length>=count)pool=matched;
+  }else if(entryType==='collocation'){
+    const role=collocationRole(item);const matched=pool.filter(other=>collocationRole(other)===role);
+    if(matched.length>=count)pool=matched;
+  }
+  return shuffle(pool).slice(0,count).map(other=>other.word);
+}
 function bankWordDistractors(correct,entryType=''){const pool=entryType?WEEKLY_WORD_BANK.filter(item=>item.entryType===entryType):WEEKLY_WORD_BANK;return randomDistractors(correct,pool.map(item=>item.word),3);}
 function bankFaDistractors(correct){return randomDistractors(correct,WEEKLY_WORD_BANK.map(item=>item.fa),3);}
 function makeChoices(correct,distractors){return shuffle(unique([correct,...distractors]).slice(0,4));}
+function isUsableCloze(question){
+  const text=String(question||'').trim();
+  if(!text||/complete\s+with\s+the\s+target/i.test(text))return false;
+  if((text.match(/_____/g)||[]).length!==1)return false;
+  const contextWords=text.replace(/_____/g,' ').match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[];
+  return text.length>=24&&contextWords.length>=4;
+}
 function blankSentence(sentence,word){
-  const regex=new RegExp(`\\b${escapeRegExp(word)}\\b`,'i');return regex.test(sentence||'')?sentence.replace(regex,'_____'):`Complete with the target word: _____`;
+  const source=String(sentence||'').trim();const target=String(word||'').trim();
+  if(!source||!target)return null;
+  const flexibleTarget=escapeRegExp(target).replace(/\\\s+/g,'\\s+');
+  const regex=new RegExp(`(^|[^A-Za-z])(${flexibleTarget})(?=$|[^A-Za-z])`,'i');
+  if(!regex.test(source))return null;
+  const question=source.replace(regex,(match,prefix)=>`${prefix}_____`);
+  return isUsableCloze(question)?question:null;
 }
 function phraseCompletion(item){
-  const tokens=String(item.word||'').split(/\s+/);if(tokens.length<2)return null;
+  const tokens=String(item.word||'').trim().split(/\s+/).filter(Boolean);if(tokens.length<2)return null;
   const blankIndex=item.entryType==='phrasal_verb'?tokens.length-1:Math.floor(Math.random()*tokens.length);
   const answer=tokens[blankIndex];const question=tokens.map((token,index)=>index===blankIndex?'_____':token).join(' ');
   const tokenPool=WEEKLY_WORD_BANK.filter(other=>other.entryType===item.entryType).flatMap(other=>String(other.word||'').split(/\s+/));
-  return {question,answer,choices:makeChoices(answer,randomDistractors(answer,tokenPool,3))};
+  const choices=makeChoices(answer,randomDistractors(answer,tokenPool,3));
+  if(choices.length!==4||(question.match(/_____/g)||[]).length!==1)return null;
+  return {question,answer,choices};
+}
+function validateWeeklyQuestion(question){
+  if(!question||!String(question.prompt||'').trim()||!String(question.question||'').trim()||!String(question.answer||'').trim())return false;
+  if(/complete\s+with\s+the\s+target/i.test(String(question.question)))return false;
+  if(question.label==='Sentence completion'&&!isUsableCloze(question.question))return false;
+  if(['Collocation completion','Phrasal particle'].includes(question.label)&&(question.question.match(/_____/g)||[]).length!==1)return false;
+  if(question.ui==='choice'){
+    const choices=unique(question.choices||[]);
+    if(choices.length!==4)return false;
+    if(!choices.some(choice=>normalizeWord(choice)===normalizeWord(question.answer)))return false;
+  }
+  return true;
 }
 function personalQuestionTypes(word){
   const types=['definition-choice','reverse-input','listening-input'];
-  if(word.contextSentence||word.example)types.push('cloze-input');
+  if(blankSentence(word.contextSentence||word.example||'',word.word))types.push('cloze-input');
   if((word.synonyms||[]).length)types.push('synonym-choice');
   if((word.antonyms||[]).length)types.push('antonym-choice');
   if(word.faMeaning)types.push('persian-choice');
@@ -1240,7 +1300,7 @@ function buildPersonalQuestion(word,index){
   const base={id:`p-${word.id}-${index}`,source:'personal',wordRef:word,type,answer:word.word,audio:word.audio||'',explanation:`${word.word} — ${word.faMeaning||word.enDefinition||''}`,definition:word.enDefinition||'',fa:word.faMeaning||'',example:word.contextSentence||word.example||'',synonyms:word.synonyms||[],antonyms:word.antonyms||[]};
   if(type==='reverse-input')return {...base,ui:'input',label:'Persian → English',prompt:'Type the English word for this meaning.',question:word.faMeaning||word.enDefinition,accepted:[word.word]};
   if(type==='listening-input')return {...base,ui:'input',listen:true,label:'Listening',prompt:'Listen and type the word you hear.',question:'🔊',accepted:[word.word]};
-  if(type==='cloze-input')return {...base,ui:'input',label:'Fill in the blank',prompt:'Complete the sentence.',question:blankSentence(base.example,word.word),clue:word.faMeaning?`Meaning: ${word.faMeaning}`:'',accepted:[word.word]};
+  if(type==='cloze-input'){const cloze=blankSentence(base.example,word.word);if(cloze)return {...base,ui:'input',label:'Fill in the blank',prompt:'Complete the full sentence.',question:cloze,clue:word.faMeaning?`Meaning: ${word.faMeaning}`:'',accepted:[word.word]};}
   if(type==='synonym-choice'){
     const correct=(word.synonyms||[])[0];return {...base,ui:'choice',answer:correct,label:'Synonym',prompt:`Choose the closest synonym for “${word.word}”.`,question:word.word,choices:makeChoices(correct,bankWordDistractors(correct)),accepted:[correct]};
   }
@@ -1250,23 +1310,41 @@ function buildPersonalQuestion(word,index){
   if(type==='persian-choice')return {...base,ui:'choice',answer:word.faMeaning,label:'Meaning',prompt:`Choose the Persian meaning of “${word.word}”.`,question:word.word,choices:makeChoices(word.faMeaning,bankFaDistractors(word.faMeaning)),accepted:[word.faMeaning]};
   const correct=word.word;return {...base,ui:'choice',label:'Definition',prompt:'Which word matches this definition?',question:word.enDefinition||word.faMeaning,choices:makeChoices(correct,[...words.map(item=>item.word),...bankWordDistractors(correct)]),accepted:[correct]};
 }
+function discoveryQuestionPatterns(item){
+  const entryType=item.entryType||'academic';const hasCloze=Boolean(blankSentence(item.example,item.word));
+  if(entryType==='academic'){
+    const patterns=['definition-choice','persian-choice'];
+    if(hasCloze)patterns.push('cloze-choice');
+    if((item.collocations||[]).length)patterns.push('collocation-choice');
+    return patterns;
+  }
+  const patterns=['phrase-definition','persian-choice',entryType==='phrasal_verb'?'particle-completion':'phrase-completion'];
+  if(hasCloze)patterns.push('cloze-choice');
+  return patterns;
+}
 function buildDiscoveryQuestion(item,index){
   const entryType=item.entryType||'academic';
-  let patterns=entryType==='academic'?['definition-choice','cloze-choice','persian-choice','collocation-choice']:entryType==='collocation'?['phrase-definition','phrase-completion','persian-choice','cloze-choice']:['phrase-definition','particle-completion','persian-choice','cloze-choice'];
-  const type=patterns[index%patterns.length];
+  const patterns=discoveryQuestionPatterns(item);const type=patterns[index%patterns.length];
   const typeLabel=entryType==='collocation'?'Collocation':entryType==='phrasal_verb'?'Phrasal verb':'Academic word';
   const base={id:`d-${item.word}-${index}`,source:'discovery',discovery:item,type,wordRef:item,answer:item.word,label:typeLabel,definition:item.definition,fa:item.fa,example:item.example,synonyms:item.synonyms||[],antonyms:item.antonyms||[],explanation:`${item.word} (${item.level} · ${typeLabel}) — ${item.fa}. ${item.definition}`};
+  let question=null;
   if(type==='phrase-completion'||type==='particle-completion'){
-    const completion=phraseCompletion(item);if(completion)return {...base,ui:'choice',answer:completion.answer,label:type==='particle-completion'?'Phrasal particle':'Collocation completion',prompt:'Choose the missing word in this natural expression.',question:completion.question,choices:completion.choices,accepted:[completion.answer]};
-  }
-  if(type==='phrase-definition')return {...base,ui:'choice',answer:item.word,label:typeLabel,prompt:`Which ${entryType==='phrasal_verb'?'phrasal verb':'collocation'} matches this meaning?`,question:item.definition,choices:makeChoices(item.word,bankWordDistractors(item.word,entryType)),accepted:[item.word]};
-  if(type==='cloze-choice')return {...base,ui:'choice',answer:item.word,label:'Sentence completion',prompt:'Choose the expression that completes the sentence.',question:blankSentence(item.example,item.word),choices:makeChoices(item.word,bankWordDistractors(item.word,entryType)),accepted:[item.word]};
-  if(type==='collocation-choice'&&(item.collocations||[]).length){const correct=item.collocations[0];const all=WEEKLY_WORD_BANK.filter(x=>x.entryType==='academic').flatMap(x=>x.collocations||[]);return {...base,ui:'choice',answer:correct,label:'Collocation',prompt:`Choose a natural collocation with “${item.word}”.`,question:item.word,choices:makeChoices(correct,randomDistractors(correct,all,3)),accepted:[correct]};}
-  if(type==='persian-choice')return {...base,ui:'choice',answer:item.fa,label:'Meaning',prompt:`Choose the Persian meaning of “${item.word}”.`,question:item.word,choices:makeChoices(item.fa,bankFaDistractors(item.fa)),accepted:[item.fa]};
-  return {...base,ui:'choice',answer:item.word,label:'Definition',prompt:'Which academic word matches this definition?',question:item.definition,choices:makeChoices(item.word,bankWordDistractors(item.word,'academic')),accepted:[item.word]};
+    const completion=phraseCompletion(item);if(completion)question={...base,ui:'choice',answer:completion.answer,label:type==='particle-completion'?'Phrasal particle':'Collocation completion',prompt:'Choose the missing word in this natural expression.',question:completion.question,choices:completion.choices,accepted:[completion.answer]};
+  }else if(type==='phrase-definition')question={...base,ui:'choice',answer:item.word,label:typeLabel,prompt:`Which ${entryType==='phrasal_verb'?'phrasal verb':'collocation'} matches this meaning?`,question:item.definition,choices:makeChoices(item.word,bankEntryDistractors(item)),accepted:[item.word]};
+  else if(type==='cloze-choice'){
+    const cloze=blankSentence(item.example,item.word);
+    if(cloze)question={...base,ui:'choice',answer:item.word,label:'Sentence completion',prompt:`Choose the ${entryType==='collocation'?'collocation':entryType==='phrasal_verb'?'phrasal verb':'word'} that completes this sentence.`,question:cloze,choices:makeChoices(item.word,bankEntryDistractors(item)),accepted:[item.word]};
+  }else if(type==='collocation-choice'&&(item.collocations||[]).length){const correct=item.collocations[0];const all=WEEKLY_WORD_BANK.filter(x=>x.entryType==='academic').flatMap(x=>x.collocations||[]);question={...base,ui:'choice',answer:correct,label:'Collocation',prompt:`Choose a natural collocation with “${item.word}”.`,question:item.word,choices:makeChoices(correct,randomDistractors(correct,all,3)),accepted:[correct]};}
+  else if(type==='persian-choice')question={...base,ui:'choice',answer:item.fa,label:'Meaning',prompt:`Choose the Persian meaning of “${item.word}”.`,question:item.word,choices:makeChoices(item.fa,bankFaDistractors(item.fa)),accepted:[item.fa]};
+  if(validateWeeklyQuestion(question))return question;
+  const fallback=entryType==='academic'
+    ? {...base,ui:'choice',answer:item.word,label:'Definition',prompt:'Which academic word matches this definition?',question:item.definition,choices:makeChoices(item.word,bankEntryDistractors(item)),accepted:[item.word]}
+    : {...base,ui:'choice',answer:item.word,label:typeLabel,prompt:`Which ${entryType==='phrasal_verb'?'phrasal verb':'collocation'} matches this meaning?`,question:item.definition,choices:makeChoices(item.word,bankEntryDistractors(item)),accepted:[item.word]};
+  return validateWeeklyQuestion(fallback)?fallback:null;
 }
 function showWeeklyQuestion(){
   const question=weeklyQuestions[weeklyQuestionIndex];if(!question)return;
+  if(!validateWeeklyQuestion(question)){console.error('Blocked invalid weekly question',question);weeklyQuestions.splice(weeklyQuestionIndex,1);if(!weeklyQuestions.length){toast('The test could not build a valid question set.');openWeeklyTest();return;}if(weeklyQuestionIndex>=weeklyQuestions.length)weeklyQuestionIndex=0;showWeeklyQuestion();return;}
   weeklyQuestionAnswered=false;weeklySelectedChoice=null;
   if($('weeklyQuestionSource')){const type=question.discovery?.entryType||'';$('weeklyQuestionSource').textContent=question.source==='discovery'?(type==='collocation'?'NEW COLLOCATION':type==='phrasal_verb'?'NEW PHRASAL VERB':'NEW WORD'):'YOUR WORD';$('weeklyQuestionSource').className=`weekly-source-badge ${question.source==='discovery'?'discovery':''} ${type==='collocation'?'collocation':''} ${type==='phrasal_verb'?'phrasal':''}`.trim();}
   if($('weeklyQuestionType'))$('weeklyQuestionType').textContent=question.label;
@@ -1332,7 +1410,7 @@ function renderWeeklyHistory(){
 
 
 
-// -------------------- v2.7 Smart Cloud AI Tutor --------------------
+// -------------------- v2.7.1 Smart Cloud AI Tutor --------------------
 const GROQ_SESSION_KEY='vajehyar_groq_key_session_v1';
 const GROQ_DEVICE_KEY='vajehyar_groq_key_device_v1';
 const OPENROUTER_SESSION_KEY='vajehyar_openrouter_key_session_v1';
@@ -1494,7 +1572,7 @@ async function handleOpenRouterOAuthCallback(){
     const response=await fetch('https://openrouter.ai/api/v1/auth/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,code_verifier:verifier,code_challenge_method:'S256'})});
     if(!response.ok)throw await readErrorResponse(response);const data=await response.json();if(!data.key)throw new Error('OpenRouter did not return a key.');
     saveProviderKey('openrouter',data.key,sessionStorage.getItem(OAUTH_REMEMBER_KEY)==='1');sessionStorage.removeItem(OAUTH_VERIFIER_KEY);sessionStorage.removeItem(OAUTH_REMEMBER_KEY);
-    history.replaceState(null,'',`${location.pathname}?release=2.7.0#aiTutor`);renderConnectionStates();await testProvider('openrouter');switchView('aiTutorView');return true;
+    history.replaceState(null,'',`${location.pathname}?release=2.7.1#aiTutor`);renderConnectionStates();await testProvider('openrouter');switchView('aiTutorView');return true;
   }catch(error){showAIError(error);return false;}
 }
 function setAIRunning(running,title='Tutor is thinking…',message='Trying the best available route.'){
@@ -1628,10 +1706,21 @@ async function analyseIelts(){const prompt=$('aiIeltsPrompt')?.value.trim()||'',
 on('aiAnalyseIeltsBtn','click',analyseIelts);
 function renderIeltsAIResult(result){const host=$('aiResult');if(!host)return;host.classList.remove('hidden');const criteria=result.criteria||{};const criterion=(key,label)=>{const item=criteria[key]||{};return `<article class="ai-band-item"><span>${label}</span><strong>${escapeHtml(item.band_range||'—')}</strong><p>${escapeHtml(item.strengths||'')}</p><p class="muted">${escapeHtml(item.improvements||'')}</p></article>`};host.innerHTML=`<div class="card ai-result-hero"><span class="eyebrow">EDUCATIONAL ESTIMATE</span><h2>Band ${escapeHtml(result.estimated_band_range||'range unavailable')}</h2><p class="${aiSettings.language==='fa'?'ai-persian':''}">${escapeHtml(result.overview||'')}</p>${routeMetaHtml()}<p class="mini muted">This is AI-assisted educational feedback, not an official IELTS score.</p></div><div class="ai-band-grid">${criterion('task','Task response')}${criterion('coherence','Coherence')}${criterion('lexical','Lexical resource')}${criterion('grammar','Grammar')}</div><div class="card"><h3>Highest-priority improvements</h3><div class="ai-issue-list">${(result.priority_issues||[]).map(item=>`<article class="ai-issue"><strong>${escapeHtml(item.issue||'')}</strong><p>${escapeHtml(item.example||'')}</p><p class="${aiSettings.language==='fa'?'ai-persian':''}">${escapeHtml(item.fix||'')}</p></article>`).join('')||'<p class="muted">No structured issues returned.</p>'}</div></div><div class="card"><h3>Corrected excerpt</h3><div class="ai-correction-box">${escapeHtml(result.corrected_excerpt||'')}</div></div><div class="card"><h3>Band 7 action plan</h3><ol>${(Array.isArray(result.band7_plan)?result.band7_plan:[result.band7_plan]).filter(Boolean).map(item=>`<li class="${aiSettings.language==='fa'?'ai-persian':''}">${escapeHtml(item)}</li>`).join('')}</ol></div>`;}
 function selectQuestionVocabulary(source,count){let pool=[];if(source==='today')pool=todayActiveWords();else if(source==='difficult')pool=words.slice().sort((a,b)=>((b.wrongCount||0)-(b.correctCount||0))-((a.wrongCount||0)-(a.correctCount||0)));else if(source==='library')pool=shuffle(words);else pool=shuffle(window.VAJEHYAR_IELTS_BANK||[]).map(item=>({word:item.word,faMeaning:item.fa,enDefinition:item.definition,example:item.example,collocations:item.collocations||[],synonyms:item.synonyms||[],antonyms:item.antonyms||[],entryType:item.entryType,cefr:item.level}));return pool.slice(0,Math.max(3,Math.min(10,count)));}
-function questionMessages(items,count,focus){const facts=items.map(item=>({word:item.word,meaning:item.faMeaning||item.fa||'',definition:item.enDefinition||item.definition||'',example:item.contextSentence||item.example||'',collocations:item.collocations||[],synonyms:item.synonyms||[],antonyms:item.antonyms||[],type:item.entryType||'word'}));return [{role:'system',content:`You create English vocabulary practice for an IELTS Band 7 learner. Use ONLY supplied vocabulary facts as the source of correct answers. Do not change a correct answer or invent a definition. Create ${count} varied questions with plausible distractors. Focus: ${focus}. Return ONLY valid JSON: {"questions":[{"type":"multiple_choice|gap_fill|rewrite","prompt":"","options":[""],"answer":"","explanation":""}]}. Multiple-choice questions need exactly four options. ${languageInstruction()}`},{role:'user',content:`VOCABULARY FACTS:\n${JSON.stringify(facts)}`}];}
+function questionMessages(items,count,focus){const facts=items.map(item=>({word:item.word,meaning:item.faMeaning||item.fa||'',definition:item.enDefinition||item.definition||'',example:item.contextSentence||item.example||'',collocations:item.collocations||[],synonyms:item.synonyms||[],antonyms:item.antonyms||[],type:item.entryType||'word'}));return [{role:'system',content:`You create English vocabulary practice for an IELTS Band 7 learner. Use ONLY supplied vocabulary facts as the source of correct answers. Do not change a correct answer or invent a definition. Create ${count} varied questions with plausible distractors. Focus: ${focus}. Return ONLY valid JSON: {"questions":[{"type":"multiple_choice|gap_fill|rewrite","prompt":"","options":[""],"answer":"","explanation":""}]}. Multiple-choice questions must have exactly four distinct options and the answer must be one of them. A gap_fill prompt must be a complete contextual sentence containing exactly one _____ blank and at least four other words. Never output placeholders such as "Complete with the target word: _____". Keep distractors in the same grammatical category as the answer. ${languageInstruction()}`},{role:'user',content:`VOCABULARY FACTS:\n${JSON.stringify(facts)}`}];}
 async function generateAIQuestions(){const count=Number($('aiQuestionCount')?.value||5),items=selectQuestionVocabulary($('aiQuestionSource')?.value||'library',Math.max(count,6));if(items.length<2){toast('Add more words before generating questions.');return;}try{const result=await runCloudAI(questionMessages(items,count,$('aiQuestionFocus')?.value||'mixed'),1200,'questions');renderAIQuestions(result);addAIHistory('questions',items.map(i=>i.word).join(', '),result);}catch(error){showAIError(error);}}
 on('aiGenerateQuestionsBtn','click',generateAIQuestions);
-function renderAIQuestions(result){const questions=Array.isArray(result.questions)?result.questions:[],host=$('aiResult');if(!host)return;host.classList.remove('hidden');host.innerHTML=`<div class="card ai-result-hero"><span class="eyebrow">AI PRACTICE SET</span><h2>${questions.length} new questions</h2><p class="muted">Generated from vocabulary facts selected by VajehYar.</p>${routeMetaHtml()}</div>${questions.map((q,index)=>`<article class="ai-question-card"><span class="mode-chip">${escapeHtml(q.type||'practice')}</span><h3>${index+1}. ${escapeHtml(q.prompt||'')}</h3>${Array.isArray(q.options)&&q.options.length?`<ol type="A">${q.options.map(option=>`<li>${escapeHtml(option)}</li>`).join('')}</ol>`:''}<button type="button" class="secondary ai-answer-toggle">Show answer</button><div class="ai-answer hidden"><strong>${escapeHtml(q.answer||'')}</strong><p class="${aiSettings.language==='fa'?'ai-persian':''}">${escapeHtml(q.explanation||'')}</p></div></article>`).join('')}`;host.querySelectorAll('.ai-answer-toggle').forEach(button=>button.addEventListener('click',()=>{const answer=button.nextElementSibling;answer?.classList.toggle('hidden');button.textContent=answer?.classList.contains('hidden')?'Show answer':'Hide answer';}));}
+function validateAIPracticeQuestion(question){
+  if(!question||!String(question.prompt||'').trim()||!String(question.answer||'').trim())return false;
+  const type=normalizeWord(question.type);const prompt=String(question.prompt||'').trim();
+  if(/complete\s+with\s+the\s+target/i.test(prompt))return false;
+  if(type==='gap_fill'&&!isUsableCloze(prompt))return false;
+  if(type==='multiple_choice'){
+    const options=unique(question.options||[]);if(options.length!==4)return false;
+    if(!options.some(option=>normalizeWord(option)===normalizeWord(question.answer)))return false;
+  }
+  return true;
+}
+function renderAIQuestions(result){const raw=Array.isArray(result.questions)?result.questions:[],questions=raw.filter(validateAIPracticeQuestion),host=$('aiResult');if(!host)return;host.classList.remove('hidden');const skipped=raw.length-questions.length;host.innerHTML=`<div class="card ai-result-hero"><span class="eyebrow">AI PRACTICE SET</span><h2>${questions.length} validated questions</h2><p class="muted">Generated from vocabulary facts selected by VajehYar.${skipped?` ${skipped} incomplete question${skipped===1?' was':'s were'} removed automatically.`:''}</p>${routeMetaHtml()}</div>${questions.length?questions.map((q,index)=>`<article class="ai-question-card"><span class="mode-chip">${escapeHtml(q.type||'practice')}</span><h3>${index+1}. ${escapeHtml(q.prompt||'')}</h3>${Array.isArray(q.options)&&q.options.length?`<ol type="A">${q.options.map(option=>`<li>${escapeHtml(option)}</li>`).join('')}</ol>`:''}<button type="button" class="secondary ai-answer-toggle">Show answer</button><div class="ai-answer hidden"><strong>${escapeHtml(q.answer||'')}</strong><p class="${aiSettings.language==='fa'?'ai-persian':''}">${escapeHtml(q.explanation||'')}</p></div></article>`).join(''):'<div class="card"><h3>No valid questions were returned</h3><p class="muted">Try generating the set again. VajehYar blocked incomplete or ambiguous questions.</p></div>'}`;host.querySelectorAll('.ai-answer-toggle').forEach(button=>button.addEventListener('click',()=>{const answer=button.nextElementSibling;answer?.classList.toggle('hidden');button.textContent=answer?.classList.contains('hidden')?'Show answer':'Hide answer';}));}
 function showAIError(error){console.error(error);setAIRunning(false);const host=$('aiResult');if(!host)return;host.classList.remove('hidden');const aborted=error?.name==='AbortError';host.innerHTML=`<div class="card"><h3>${aborted?'AI request stopped':'AI Tutor could not finish'}</h3><p class="muted">${escapeHtml(aborted?'The request was cancelled.':error.message||String(error))}</p><p class="mini muted">Check the provider connection, quota, selected models, and network. VajehYar automatically tries configured fallbacks before showing this error.</p></div>`;}
 function renderAIHistory(){const host=$('aiHistoryList');if(!host)return;if($('aiHistoryCount'))$('aiHistoryCount').textContent=`${aiHistory.length} saved`;host.innerHTML=aiHistory.length?aiHistory.slice(0,8).map(item=>`<article class="ai-history-item"><div class="ai-history-icon">${item.type==='ielts'?'📝':item.type==='questions'?'🧩':'✍️'}</div><div><strong>${item.type==='ielts'?'IELTS writing review':item.type==='questions'?'Generated question set':'Sentence feedback'}</strong><p>${escapeHtml(String(item.input||'').slice(0,95))}${String(item.input||'').length>95?'…':''}</p>${item.meta?`<div class="ai-route-meta"><span>${escapeHtml(humanProvider(item.meta.provider||''))}</span><span>${escapeHtml(item.meta.model||'')}</span></div>`:''}</div><time>${escapeHtml(item.date||'')}</time></article>`).join(''):'<p class="muted">No AI feedback saved yet.</p>';}
 

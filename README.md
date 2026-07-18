@@ -1,30 +1,27 @@
-# VajehYar v2.7 — Smart Cloud AI Router
+# VajehYar v2.7.1 — Quiz Quality Fix
 
-VajehYar is a mobile-first PWA for personal English vocabulary learning, IELTS Band 7 preparation, Leitner review, weekly mixed tests, active writing, and AI-assisted feedback.
+This maintenance release keeps every feature from v2.7 and fixes incomplete or ambiguous vocabulary questions.
 
-## New in v2.7
+## Fixed in v2.7.1
 
-- Groq and OpenRouter support
-- Each user supplies their own provider key or connects OpenRouter with OAuth PKCE
-- No API key is bundled in the public GitHub repository
-- Session-only key storage by default; optional device storage on trusted devices
-- API keys are excluded from backups
-- Smart provider fallback and model rotation
-- Dynamic model discovery from both providers
-- OpenRouter free-model-only mode
-- Task-aware model selection for sentence feedback, IELTS writing, and question generation
-- Daily in-app soft cap and usage counters
-- Exact-result cache to avoid repeating identical API calls
-- Clear handling of invalid keys, quota limits, rate limits, timeouts, and unavailable models
+- Sentence-completion questions are created only when a complete example sentence contains the exact target word or expression.
+- The invalid fallback text `Complete with the target word: _____` has been removed completely.
+- Collocations and phrasal verbs whose examples use a different tense, article, plural form, or modified phrase now fall back to a definition/meaning question instead of showing an empty prompt.
+- Every weekly-test question is validated before it can appear.
+- Invalid questions are skipped and automatically replaced to keep the test at 12 questions whenever enough bank entries exist.
+- Multiple-choice questions must contain four distinct options and the correct answer.
+- Collocation distractors are better matched by grammatical role.
+- AI-generated practice sets are validated too; incomplete gap-fill questions are removed automatically.
+- Existing words, Leitner progress, XP, AI settings, and test history remain compatible.
+
+## Deploy
+
+Upload all files and the `icons` folder to the root of the existing GitHub Pages repository, replacing the previous files. Then open:
+
+`https://alitmz.github.io/vajehyar/?release=2.7.1`
+
+Refresh once. Do not clear site data.
 
 ## Security
 
-Never commit API keys to GitHub. Every user should connect their own Groq or OpenRouter account. Browser-side keys can be inspected by someone with access to that device, so session-only storage is the safest default.
-
-## Deployment
-
-Upload every file and folder from this package to the root of your GitHub Pages repository and replace older files. Then visit:
-
-`https://alitmz.github.io/vajehyar/?release=2.7.0`
-
-Refresh once after GitHub Pages finishes deploying. Existing vocabulary and progress use the same storage keys and remain available.
+Never place Groq or OpenRouter API keys in this repository. Each user should enter their own key in the app settings.
