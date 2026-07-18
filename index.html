@@ -1,10 +1,257 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#4f46e5"><meta name="description" content="واژه‌یار؛ دیکشنری شخصی و جعبه لایتنر آفلاین"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css"><title>واژه‌یار</title></head><body>
-<header class="topbar"><div><h1>واژه‌یار</h1><p>دیکشنری شخصی و جعبه لایتنر</p></div><button id="installBtn" class="ghost hidden">نصب برنامه</button></header>
-<main>
-<section id="homeView" class="view active"><div class="hero card"><h2>مرور امروز</h2><div class="stats"><div><strong id="dueCount">۰</strong><span>آماده مرور</span></div><div><strong id="totalCount">۰</strong><span>کل کلمات</span></div><div><strong id="learnedCount">۰</strong><span>یادگرفته‌شده</span></div></div><button id="startReviewBtn" class="primary wide">شروع مرور</button></div><div class="card"><h3>خانه‌های لایتنر</h3><div id="boxStats" class="box-stats"></div></div><div class="card"><h3>یادآوری</h3><p class="muted">همه داده‌ها روی همین دستگاه ذخیره می‌شوند و مرور کلمات ذخیره‌شده آفلاین است.</p></div></section>
-<section id="searchView" class="view"><div class="card"><h2>جست‌وجوی کلمه</h2><form id="searchForm" class="search-row"><input id="wordInput" dir="ltr" autocomplete="off" placeholder="مثلاً: resilient" required><button class="primary" type="submit">جست‌وجو</button></form><div id="searchStatus" class="status"></div></div><div id="resultCard" class="card hidden"><div class="result-head"><div><h2 id="resultWord" dir="ltr"></h2><div id="phonetic" class="phonetic" dir="ltr"></div></div><button id="speakBtn" class="round">🔊</button></div><label>معنی فارسی</label><textarea id="faMeaning" rows="3"></textarea><label>تعریف انگلیسی</label><textarea id="enDefinition" rows="4" dir="ltr"></textarea><label>مثال</label><textarea id="exampleText" rows="3" dir="ltr"></textarea><label>یادداشت شخصی</label><textarea id="noteText" rows="2"></textarea><button id="saveWordBtn" class="primary wide">ذخیره در لایتنر</button></div></section>
-<section id="reviewView" class="view"><div class="card review-card"><div id="reviewEmpty"><h2>مروری برای امروز باقی نمانده 🎉</h2><p class="muted">کلمات بعدی در زمان مناسب دوباره نمایش داده می‌شوند.</p></div><div id="reviewContent" class="hidden"><div class="progress"><span id="reviewProgress"></span></div><div class="box-chip" id="reviewBox"></div><h2 id="reviewWord" dir="ltr"></h2><button id="revealBtn" class="secondary wide">نمایش معنی</button><div id="answerPanel" class="answer hidden"><h3 id="reviewFa"></h3><p id="reviewEn" dir="ltr"></p><p id="reviewExample" dir="ltr" class="example"></p><div class="answer-actions"><button id="wrongBtn" class="danger">بلد نبودم</button><button id="correctBtn" class="success">بلد بودم</button></div></div></div></div></section>
-<section id="wordsView" class="view"><div class="card"><div class="list-head"><h2>کلمات من</h2><input id="filterWords" placeholder="جست‌وجو در کلمات" dir="ltr"></div><div id="wordsList"></div></div></section>
-<section id="settingsView" class="view"><div class="card"><h2>پشتیبان‌گیری</h2><div class="stack"><button id="exportBtn" class="secondary">دریافت فایل پشتیبان</button><label class="file-btn">بازیابی از فایل<input id="importInput" type="file" accept="application/json"></label></div></div><div class="card"><h2>تنظیمات لایتنر</h2><p class="muted">فاصله مرور خانه‌ها: ۱، ۲، ۴، ۸ و ۱۶ روز</p></div><div class="card"><h2>درباره جست‌وجو</h2><p class="muted">تعریف انگلیسی از Dictionary API و ترجمه فارسی در صورت دسترسی از سرویس عمومی ترجمه دریافت می‌شود. بعد از ذخیره، مرور آفلاین است.</p></div></section>
-</main>
-<nav class="bottom-nav"><button data-view="homeView" class="active">خانه</button><button data-view="searchView">جست‌وجو</button><button data-view="reviewView">مرور</button><button data-view="wordsView">کلمات</button><button data-view="settingsView">تنظیمات</button></nav><div id="toast" class="toast"></div><script src="./app.js"></script></body></html>
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#5b5cf0">
+  <meta name="description" content="VajehYar — a personal dictionary, Leitner trainer, and vocabulary game.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>VajehYar</title>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-mark" aria-hidden="true">V</div>
+      <div>
+        <h1>VajehYar</h1>
+        <p>Personal dictionary & Leitner trainer</p>
+      </div>
+    </div>
+    <button id="installBtn" class="ghost hidden">Install app</button>
+  </header>
+
+  <main>
+    <section id="homeView" class="view active">
+      <div class="hero card">
+        <div class="hero-copy">
+          <span class="eyebrow">TODAY'S QUEST</span>
+          <h2>Build your vocabulary, one review at a time.</h2>
+          <p>Complete your daily goal, protect your streak, and level up.</p>
+        </div>
+        <button id="startReviewBtn" class="primary hero-button">Start today's review <span>→</span></button>
+      </div>
+
+      <div class="game-grid">
+        <article class="card level-card">
+          <div class="card-title-row">
+            <div>
+              <span class="eyebrow">LEVEL</span>
+              <h3 id="levelLabel">Level 1</h3>
+            </div>
+            <div class="level-orb" id="levelOrb">1</div>
+          </div>
+          <div class="progress-track"><span id="xpProgress"></span></div>
+          <p class="mini"><strong id="xpLabel">0 XP</strong> · <span id="xpNextLabel">100 XP to next level</span></p>
+        </article>
+
+        <article class="card streak-card">
+          <span class="eyebrow">STREAK</span>
+          <div class="streak-number"><span>🔥</span><strong id="streakCount">0</strong></div>
+          <p class="mini">consecutive active days</p>
+        </article>
+
+        <article class="card goal-card">
+          <div class="goal-ring" id="goalRing"><div><strong id="goalProgressText">0/10</strong><span>reviews</span></div></div>
+          <div>
+            <span class="eyebrow">DAILY GOAL</span>
+            <h3 id="goalStatus">Ready to begin</h3>
+            <p class="mini">Earn a bonus when you finish.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card"><span class="stat-icon">⏰</span><strong id="dueCount">0</strong><span>Due now</span></article>
+        <article class="stat-card"><span class="stat-icon">📚</span><strong id="totalCount">0</strong><span>Total words</span></article>
+        <article class="stat-card"><span class="stat-icon">🏆</span><strong id="learnedCount">0</strong><span>Mastered</span></article>
+        <article class="stat-card"><span class="stat-icon">⚡</span><strong id="todayXpCount">0</strong><span>XP today</span></article>
+      </div>
+
+      <div class="card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">LEITNER SYSTEM</span>
+            <h3>Your memory boxes</h3>
+          </div>
+          <span class="muted mini">1 · 2 · 4 · 8 · 16 day intervals</span>
+        </div>
+        <div id="boxStats" class="box-stats"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">ACHIEVEMENTS</span>
+            <h3>Badge collection</h3>
+          </div>
+          <span id="badgeSummary" class="muted mini"></span>
+        </div>
+        <div id="badgesGrid" class="badges-grid"></div>
+      </div>
+    </section>
+
+    <section id="searchView" class="view">
+      <div class="dictionary-hero card">
+        <span class="eyebrow">SMART DICTIONARY</span>
+        <h2>Look up a word. Keep what matters.</h2>
+        <p>Definitions, pronunciation, usage examples, synonyms, antonyms, and an editable Persian meaning.</p>
+        <form id="searchForm" class="search-row">
+          <input id="wordInput" lang="en" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Search an English word..." required>
+          <button class="primary" type="submit">Search</button>
+        </form>
+        <div id="searchStatus" class="status" role="status"></div>
+      </div>
+
+      <div id="resultCard" class="card hidden result-card">
+        <div class="result-head">
+          <div>
+            <div class="word-title-line">
+              <h2 id="resultWord"></h2>
+              <span id="savedBadge" class="saved-badge hidden">Saved</span>
+            </div>
+            <div id="phonetic" class="phonetic"></div>
+          </div>
+          <button id="speakBtn" class="round" aria-label="Play pronunciation">🔊</button>
+        </div>
+
+        <div id="partOfSpeechChips" class="chips"></div>
+
+        <div class="editor-panel">
+          <div class="field-heading">
+            <label for="faMeaning">Persian meaning</label>
+            <span class="helper">Editable</span>
+          </div>
+          <textarea id="faMeaning" class="persian-text" dir="rtl" rows="3" placeholder="معنی فارسی را وارد یا اصلاح کنید"></textarea>
+
+          <div class="field-heading"><label for="personalNote">Personal note</label><span class="helper">Optional</span></div>
+          <textarea id="personalNote" rows="2" placeholder="A memory hook, context, or your own sentence..."></textarea>
+        </div>
+
+        <div class="dictionary-section">
+          <div class="section-heading compact"><h3>Meanings & definitions</h3><span id="definitionCount" class="helper"></span></div>
+          <div id="meaningsList" class="meanings-list"></div>
+        </div>
+
+        <div id="wordRelations" class="relations-grid hidden">
+          <div id="synonymsBlock" class="relation-card hidden"><h3>Synonyms</h3><div id="synonymsList" class="chips"></div></div>
+          <div id="antonymsBlock" class="relation-card hidden"><h3>Antonyms</h3><div id="antonymsList" class="chips"></div></div>
+        </div>
+
+        <div id="sourceBlock" class="source-row hidden">
+          <span>Source</span><a id="sourceLink" href="#" target="_blank" rel="noopener">Open dictionary source ↗</a>
+        </div>
+
+        <button id="saveWordBtn" class="primary wide">Add to Leitner Box 1 · +5 XP</button>
+      </div>
+
+      <div class="card recent-card">
+        <div class="section-heading compact"><h3>Recent searches</h3><button id="clearHistoryBtn" class="text-button">Clear</button></div>
+        <div id="recentSearches" class="chips"></div>
+      </div>
+    </section>
+
+    <section id="reviewView" class="view">
+      <div class="review-topline">
+        <div><span class="eyebrow">REVIEW SESSION</span><h2>Recall before revealing.</h2></div>
+        <div class="session-xp">+<span id="sessionXp">0</span> XP</div>
+      </div>
+
+      <div class="card review-card">
+        <div id="reviewEmpty" class="empty-state">
+          <div class="empty-emoji">🎉</div>
+          <h2>You're all caught up!</h2>
+          <p>No words are due right now. Add a new word or return later.</p>
+          <button id="emptySearchBtn" class="secondary">Find a new word</button>
+        </div>
+
+        <div id="reviewContent" class="hidden">
+          <div class="review-meta">
+            <span id="reviewBox" class="box-chip"></span>
+            <span id="reviewCounter" class="helper"></span>
+          </div>
+          <div class="progress-track review-progress"><span id="reviewProgress"></span></div>
+          <h2 id="reviewWord" class="review-word"></h2>
+          <p id="reviewHint" class="review-hint"></p>
+          <button id="reviewSpeakBtn" class="text-button audio-link">🔊 Hear the word</button>
+          <button id="revealBtn" class="secondary wide reveal-button">Reveal answer</button>
+
+          <div id="answerPanel" class="answer hidden">
+            <h3 id="reviewFa" class="persian-text" dir="rtl"></h3>
+            <p id="reviewEn"></p>
+            <blockquote id="reviewExample" class="example"></blockquote>
+            <div class="answer-actions">
+              <button id="wrongBtn" class="danger"><span>Not yet</span><small>Back to Box 1 · +2 XP</small></button>
+              <button id="correctBtn" class="success"><span>I knew it</span><small>Move forward · +10 XP</small></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="wordsView" class="view">
+      <div class="card">
+        <div class="library-header">
+          <div><span class="eyebrow">YOUR LIBRARY</span><h2>Saved vocabulary</h2></div>
+          <input id="filterWords" placeholder="Filter words or meanings..." autocomplete="off">
+        </div>
+        <div class="filter-tabs" id="libraryFilters">
+          <button data-filter="all" class="active">All</button>
+          <button data-filter="due">Due</button>
+          <button data-filter="learning">Learning</button>
+          <button data-filter="mastered">Mastered</button>
+        </div>
+        <div id="wordsList"></div>
+      </div>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="settings-grid">
+        <div class="card">
+          <span class="eyebrow">DATA</span>
+          <h2>Backup & restore</h2>
+          <p class="muted">Your words and progress live on this device. Export a backup periodically.</p>
+          <div class="stack">
+            <button id="exportBtn" class="secondary">Download backup</button>
+            <label class="file-btn">Restore from backup<input id="importInput" type="file" accept="application/json"></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">DAILY GOAL</span>
+          <h2>Reviews per day</h2>
+          <div class="goal-options" id="goalOptions">
+            <button data-goal="5">5</button><button data-goal="10" class="active">10</button><button data-goal="20">20</button><button data-goal="30">30</button>
+          </div>
+          <p class="muted">The goal resets at midnight on your device.</p>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">APP</span>
+          <h2>How it works</h2>
+          <p class="muted">New dictionary searches need internet access. Saved words, reviews, XP, streaks, and backups work locally. Persian text uses the Vazirmatn typeface when available.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Primary navigation">
+    <button data-view="homeView" class="active"><span>⌂</span>Home</button>
+    <button data-view="searchView"><span>⌕</span>Dictionary</button>
+    <button data-view="reviewView"><span>↻</span>Review</button>
+    <button data-view="wordsView"><span>▤</span>Words</button>
+    <button data-view="settingsView"><span>⚙</span>Settings</button>
+  </nav>
+
+  <div id="toast" class="toast" role="status"></div>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
