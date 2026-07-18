@@ -7,13 +7,13 @@
   <meta name="description" content="VajehYar — a personal dictionary, Leitner trainer, and vocabulary game.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="./manifest.webmanifest?release=2.2.0">
+  <link rel="manifest" href="./manifest.webmanifest?release=2.3.0">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles-v2.2.css?release=2.2.0">
+  <link rel="stylesheet" href="./styles-v2.3.css?release=2.3.0">
   <title>VajehYar</title>
 </head>
 <body>
@@ -78,6 +78,19 @@
         <article class="stat-card"><span class="stat-icon">⚡</span><strong id="todayXpCount">0</strong><span>XP today</span></article>
       </div>
 
+      <div class="card active-practice-card">
+        <div class="active-practice-copy">
+          <span class="eyebrow">ACTIVE USE</span>
+          <h3>Use today's words in your own writing.</h3>
+          <p class="muted">Turn recognition into real recall by writing a short paragraph with the words you reviewed or saved today.</p>
+          <div id="todayWordsPreview" class="chips practice-preview"></div>
+        </div>
+        <div class="active-practice-action">
+          <div class="practice-count"><strong id="todayWordsCount">0</strong><span>words ready</span></div>
+          <button id="startPracticeBtn" class="secondary">Practice today's words →</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="section-heading">
           <div>
@@ -102,6 +115,16 @@
     </section>
 
     <section id="searchView" class="view">
+      <div id="shareCaptureCard" class="card share-capture hidden">
+        <div class="share-capture-icon">↗</div>
+        <div>
+          <span class="eyebrow">QUICK CAPTURE</span>
+          <h3>Shared from another app</h3>
+          <p id="shareCaptureSummary" class="muted"></p>
+          <button id="dismissShareBtn" class="text-button">Dismiss</button>
+        </div>
+      </div>
+
       <div class="dictionary-hero card">
         <span class="eyebrow">SMART DICTIONARY</span>
         <h2>Look up a word. Keep what matters.</h2>
@@ -134,8 +157,33 @@
           </div>
           <textarea id="faMeaning" class="persian-text" dir="rtl" rows="3" placeholder="معنی فارسی را وارد یا اصلاح کنید"></textarea>
 
+          <div class="field-heading"><label for="contextSentence">Sentence / context</label><span class="helper">Recommended</span></div>
+          <textarea id="contextSentence" rows="3" placeholder="Paste the sentence where you found this word, or write your own example..."></textarea>
+
+          <div class="source-fields">
+            <div>
+              <div class="field-heading"><label for="sourceTitle">Source</label><span class="helper">Optional</span></div>
+              <input id="sourceTitle" placeholder="Book, movie, article, class...">
+            </div>
+            <div>
+              <div class="field-heading"><label for="sourceType">Source type</label></div>
+              <select id="sourceType">
+                <option value="">Choose a type</option>
+                <option value="Book">Book</option>
+                <option value="Movie / Series">Movie / Series</option>
+                <option value="Article / Website">Article / Website</option>
+                <option value="Class">Class</option>
+                <option value="Conversation">Conversation</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-heading"><label for="sourceUrlInput">Source link</label><span class="helper">Optional</span></div>
+          <input id="sourceUrlInput" type="url" inputmode="url" placeholder="https://...">
+
           <div class="field-heading"><label for="personalNote">Personal note</label><span class="helper">Optional</span></div>
-          <textarea id="personalNote" rows="2" placeholder="A memory hook, context, or your own sentence..."></textarea>
+          <textarea id="personalNote" rows="2" placeholder="A memory hook or anything that helps you remember..."></textarea>
         </div>
 
         <div class="dictionary-section">
@@ -170,7 +218,7 @@
 
     <section id="reviewView" class="view">
       <div class="review-topline">
-        <div><span class="eyebrow">REVIEW SESSION</span><h2>Recall before revealing.</h2></div>
+        <div><span class="eyebrow">ADAPTIVE REVIEW</span><h2>Recall in more than one way.</h2></div>
         <div class="session-xp">+<span id="sessionXp">0</span> XP</div>
       </div>
 
@@ -178,30 +226,95 @@
         <div id="reviewEmpty" class="empty-state">
           <div class="empty-emoji">🎉</div>
           <h2>You're all caught up!</h2>
-          <p>No words are due right now. Add a new word or return later.</p>
-          <button id="emptySearchBtn" class="secondary">Find a new word</button>
+          <p>No words are due right now. Add a new word or practice today's vocabulary.</p>
+          <div class="empty-actions">
+            <button id="emptySearchBtn" class="secondary">Find a new word</button>
+            <button id="emptyPracticeBtn" class="primary">Active practice</button>
+          </div>
         </div>
 
         <div id="reviewContent" class="hidden">
           <div class="review-meta">
-            <span id="reviewBox" class="box-chip"></span>
+            <div>
+              <span id="reviewBox" class="box-chip"></span>
+              <span id="reviewModeLabel" class="mode-chip"></span>
+            </div>
             <span id="reviewCounter" class="helper"></span>
           </div>
           <div class="progress-track review-progress"><span id="reviewProgress"></span></div>
+
+          <p id="reviewPrompt" class="review-prompt"></p>
           <h2 id="reviewWord" class="review-word"></h2>
           <p id="reviewHint" class="review-hint"></p>
-          <button id="reviewSpeakBtn" class="text-button audio-link">🔊 Hear the word</button>
+          <button id="reviewSpeakBtn" class="text-button audio-link hidden">🔊 Hear the word</button>
+
+          <div id="reviewInputPanel" class="review-input-panel hidden">
+            <input id="reviewAnswerInput" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type your answer...">
+            <button id="checkAnswerBtn" class="primary">Check answer</button>
+          </div>
+          <p id="answerFeedback" class="answer-feedback hidden"></p>
           <button id="revealBtn" class="secondary wide reveal-button">Reveal answer</button>
 
           <div id="answerPanel" class="answer hidden">
+            <div class="correct-word-line">
+              <span>Correct answer</span>
+              <strong id="reviewCorrectWord"></strong>
+            </div>
             <h3 id="reviewFa" class="persian-text" dir="rtl"></h3>
             <p id="reviewEn"></p>
             <blockquote id="reviewExample" class="example"></blockquote>
-            <div class="answer-actions">
-              <button id="wrongBtn" class="danger"><span>Not yet</span><small>Back to Box 1 · +2 XP</small></button>
-              <button id="correctBtn" class="success"><span>I knew it</span><small>Move forward · +10 XP</small></button>
+            <div id="reviewSource" class="review-source hidden"></div>
+
+            <p class="rating-question">How difficult was this recall?</p>
+            <div id="ratingButtons" class="rating-actions">
+              <button data-rating="again" class="rating-again"><span>Again</span><small>Restart · +2 XP</small></button>
+              <button data-rating="hard" class="rating-hard"><span>Hard</span><small>Short interval · +5 XP</small></button>
+              <button data-rating="good" class="rating-good"><span>Good</span><small>Move forward · +10 XP</small></button>
+              <button data-rating="easy" class="rating-easy"><span>Easy</span><small>Long interval · +15 XP</small></button>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="practiceView" class="view">
+      <div class="practice-topline">
+        <button id="practiceBackBtn" class="text-button">← Home</button>
+        <div><span class="eyebrow">ACTIVE PRACTICE</span><h2>Make today's words yours.</h2></div>
+      </div>
+
+      <div id="practiceEmpty" class="card empty-state hidden">
+        <div class="empty-emoji">✍️</div>
+        <h2>No words are ready yet.</h2>
+        <p>Save or review a few words today, then come back to use them in a paragraph.</p>
+        <button id="practiceFindWordBtn" class="primary">Find a word</button>
+      </div>
+
+      <div id="practiceContent" class="practice-layout hidden">
+        <div class="card">
+          <span class="eyebrow">TODAY'S WORD SET</span>
+          <h3 id="practicePrompt">Write 2–4 sentences using at least two target words naturally.</h3>
+          <div id="practiceWordChips" class="chips practice-word-chips"></div>
+          <p class="muted mini">VajehYar checks whether the target words appear in your writing. Grammar evaluation is not automatic.</p>
+        </div>
+
+        <div class="card practice-editor-card">
+          <div class="section-heading compact">
+            <h3>Your paragraph</h3>
+            <span id="practiceUsageLabel" class="helper">0 words used</span>
+          </div>
+          <textarea id="practiceText" rows="9" placeholder="Write a short paragraph, mini-story, or personal example..."></textarea>
+          <div class="practice-meter"><span id="practiceMeter"></span></div>
+          <div class="practice-actions">
+            <button id="newPracticePromptBtn" class="secondary">New prompt</button>
+            <button id="savePracticeBtn" class="primary">Complete practice · +20 XP</button>
+          </div>
+          <p id="practiceFeedback" class="answer-feedback hidden"></p>
+        </div>
+
+        <div class="card">
+          <div class="section-heading compact"><h3>Recent active practice</h3><span id="practiceSessionCount" class="helper"></span></div>
+          <div id="practiceHistory" class="practice-history"></div>
         </div>
       </div>
     </section>
@@ -246,7 +359,7 @@
         <div class="card">
           <span class="eyebrow">APP</span>
           <h2>How it works</h2>
-          <p class="muted">New dictionary searches need internet access. Saved words, reviews, XP, streaks, and backups work locally. Persian text uses the Vazirmatn typeface when available.</p>
+          <p class="muted">New dictionary searches need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
         </div>
       </div>
     </section>
@@ -262,6 +375,6 @@
 
   <div id="toast" class="toast" role="status"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
-  <script src="./bootstrap-v2.2.js?release=2.2.0"></script>
+  <script src="./bootstrap-v2.3.js?release=2.3.0"></script>
 </body>
 </html>

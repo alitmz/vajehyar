@@ -1,13 +1,18 @@
-# Update to VajehYar v2.2
+# Update to v2.3
 
-1. Extract the ZIP file.
-2. Upload **all files and the `icons` folder** to the root of the existing `vajehyar` repository.
-3. Allow GitHub to replace files with the same names, then commit the changes.
-4. Wait until the GitHub Pages deployment is green.
-5. Open this exact URL once:
+Upload and replace every file from this package in the root of the GitHub repository.
 
-   `https://alitmz.github.io/vajehyar/?release=2.2.0`
+Important new files:
 
-6. Refresh once. The release bootstrap removes the stale v2.0/v2.1 service-worker cache without deleting your saved words, XP, or review progress.
+- `app-v2.3.js`
+- `styles-v2.3.css`
+- `bootstrap-v2.3.js`
+- `sw-v2.3.js`
+- updated `index.html`
+- updated `manifest.webmanifest`
 
-Do not clear Chrome site data, because vocabulary data is stored locally in the browser.
+After deployment, open:
+
+`https://alitmz.github.io/vajehyar/?release=2.3.0`
+
+Refresh once. Do **not** clear site storage.

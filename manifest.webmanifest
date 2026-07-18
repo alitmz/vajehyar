@@ -1,8 +1,8 @@
 {
   "name": "VajehYar — Vocabulary Trainer",
   "short_name": "VajehYar",
-  "description": "A personal English dictionary, Leitner trainer, and vocabulary game.",
-  "start_url": "./?release=2.2.0",
+  "description": "A personal English dictionary, adaptive vocabulary trainer, quick share target, and active-practice journal.",
+  "start_url": "./?release=2.3.0",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -28,5 +28,39 @@
       "purpose": "any maskable"
     }
   ],
-  "id": "./?app=vajehyar"
+  "id": "./?app=vajehyar",
+  "share_target": {
+    "action": "./?share=1",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "shortcuts": [
+    {
+      "name": "Dictionary",
+      "short_name": "Dictionary",
+      "url": "./?release=2.3.0#search",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "short_name": "Review",
+      "url": "./?release=2.3.0#review",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

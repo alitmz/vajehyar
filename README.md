@@ -1,61 +1,43 @@
-# VajehYar v2.2 — Personal Dictionary & Leitner Trainer
+# VajehYar v2.3
 
-VajehYar is an installable Progressive Web App for building a personal English vocabulary library and reviewing words with a five-box Leitner system.
+VajehYar is a private, installable vocabulary-learning PWA designed for personal English study.
 
-## Version 2.1
+## New in v2.3
 
-This release fixes the mobile bottom-navigation issue from version 2.0 and expands the dictionary with richer lexical relationships.
+- **Android Share Target:** select or share a word from supported Android apps and choose VajehYar.
+- **Context-aware saving:** save each word with the sentence where you found it, a source title/type, and an optional source link.
+- **Four review modes:** meaning recall, reverse recall, fill-in-the-blank, and listening recall.
+- **Four recall ratings:** Again, Hard, Good, and Easy with adaptive Leitner scheduling.
+- **Active Practice:** write a paragraph using today's saved or reviewed words and earn a daily XP reward.
 
-## Features
+## Existing features
 
-- English dictionary lookup with multiple meanings and definitions
-- Pronunciation text and audio when available
-- Usage examples and parts of speech
-- Synonyms and antonyms from multiple public lexical sources
-- Related words and estimated root/word-family forms
-- Origin or etymology when supplied by the dictionary source
-- Editable Persian meaning with Vazirmatn typography
-- Five-box Leitner review schedule: 1, 2, 4, 8, and 16 days
-- Local-first storage: no account, backend, or always-on computer required
-- Offline review of saved vocabulary
-- XP, levels, daily goals, streaks, and achievement badges
-- Search history, library filters, backup, and restore
-- Installable on Android from Chrome
+- English definitions, examples, pronunciation, Persian meaning, synonyms, antonyms, related words, and word-family clues
+- Five-box Leitner system
+- XP, levels, daily goals, streaks, and achievements
+- Local-first storage and offline review
+- Backup and restore
+- Installable from Chrome as a standalone app
 
-## Publish with GitHub Pages
+## Deploy on GitHub Pages
 
-1. Upload every file in this folder to the root of your GitHub repository.
-2. Replace the existing files when GitHub asks.
-3. Open **Settings → Pages**.
-4. Under **Build and deployment**, select:
-   - Source: **Deploy from a branch**
-   - Branch: **main**
-   - Folder: **/ (root)**
-5. Save the configuration.
-6. Open `https://YOUR-USERNAME.github.io/vajehyar/` after deployment finishes.
+1. Extract the ZIP.
+2. Upload all files and the `icons` folder to the root of your existing `vajehyar` repository.
+3. Replace the previous files and commit the changes.
+4. Wait for the GitHub Pages deployment to turn green.
+5. Open:
 
-## Updating an installed copy
+   `https://alitmz.github.io/vajehyar/?release=2.3.0`
 
-After uploading version 2.1:
+6. Refresh once. Do not clear site storage, because your saved vocabulary lives in the browser's local storage.
 
-1. Open the website in Chrome.
-2. Refresh the page once.
-3. Close and reopen the installed app.
+## Quick Share on Android
 
-Do not clear site storage unless you already exported a backup, because saved words are stored locally on the device.
+After the updated PWA is installed:
 
-## Data and connectivity
+1. Select a word or text in a supported Android app.
+2. Tap **Share**.
+3. Choose **VajehYar**.
+4. VajehYar opens the Dictionary tab, searches the shared word, and carries over the shared sentence and source when available.
 
-- New dictionary searches require internet access.
-- Saved words, Leitner reviews, XP, streaks, settings, and backups are stored locally.
-- The original local-storage keys are preserved, so upgrading does not intentionally erase existing vocabulary.
-
-## Dictionary services
-
-The app uses public dictionary and lexical APIs. Root and word-family suggestions are estimates based on word structure and public lexical data; they should not be treated as guaranteed historical etymology. Users can edit the Persian meaning before saving.
-
-
-## v2.2 reliability fix
-- Fixed the startup `nowDateKey` initialization error that blocked all navigation tabs.
-- Uses a release bootstrap and uniquely named JavaScript/CSS files to bypass stale service-worker caches.
-- Uses network-first updates for application code while preserving offline review support.
+The exact Share-menu behavior depends on the Android app sending the content.
