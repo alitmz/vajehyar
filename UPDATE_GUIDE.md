@@ -1,11 +1,12 @@
-# Updating the existing GitHub Pages app
+# Update to VajehYar 2.1
 
-1. Extract this ZIP file.
-2. Open your `alitmz/vajehyar` repository.
-3. Use **Add file → Upload files**.
-4. Upload all files and the `icons` folder, replacing the older files.
+1. Extract the ZIP file.
+2. Open the `alitmz/vajehyar` repository on GitHub.
+3. Select **Add file → Upload files**.
+4. Drag all extracted files and the `icons` folder into the upload area.
 5. Commit the changes to the `main` branch.
-6. Wait for the green GitHub Pages deployment indicator.
-7. Open the app and refresh it once. If the old interface remains, close the installed PWA completely and reopen it, or clear only the site's cache. Do not clear site storage if you want to keep saved words.
+6. Wait for the GitHub Pages deployment indicator to become green.
+7. Open the deployed site in Chrome and refresh once.
+8. Close and reopen the installed PWA.
 
-The existing word database key is unchanged, so current vocabulary should remain available after the update.
+The vocabulary database remains on the device because this release keeps the existing storage keys.

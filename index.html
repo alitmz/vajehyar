@@ -10,7 +10,10 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=2.1.0">
   <title>VajehYar</title>
 </head>
 <body>
@@ -102,7 +105,7 @@
       <div class="dictionary-hero card">
         <span class="eyebrow">SMART DICTIONARY</span>
         <h2>Look up a word. Keep what matters.</h2>
-        <p>Definitions, pronunciation, usage examples, synonyms, antonyms, and an editable Persian meaning.</p>
+        <p>Definitions, pronunciation, examples, synonyms, antonyms, related words, word-family clues, and an editable Persian meaning.</p>
         <form id="searchForm" class="search-row">
           <input id="wordInput" lang="en" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Search an English word..." required>
           <button class="primary" type="submit">Search</button>
@@ -141,8 +144,15 @@
         </div>
 
         <div id="wordRelations" class="relations-grid hidden">
-          <div id="synonymsBlock" class="relation-card hidden"><h3>Synonyms</h3><div id="synonymsList" class="chips"></div></div>
-          <div id="antonymsBlock" class="relation-card hidden"><h3>Antonyms</h3><div id="antonymsList" class="chips"></div></div>
+          <div id="synonymsBlock" class="relation-card hidden"><div class="relation-title"><span class="relation-icon">≈</span><h3>Synonyms</h3></div><div id="synonymsList" class="chips"></div></div>
+          <div id="antonymsBlock" class="relation-card hidden"><div class="relation-title"><span class="relation-icon">↔</span><h3>Antonyms</h3></div><div id="antonymsList" class="chips"></div></div>
+          <div id="familyBlock" class="relation-card hidden"><div class="relation-title"><span class="relation-icon">🌿</span><h3>Root & word family</h3></div><p id="rootHint" class="root-hint hidden"></p><div id="familyList" class="chips"></div><p class="relation-note">Base forms are estimated from word structure and public lexical data.</p></div>
+          <div id="relatedBlock" class="relation-card hidden"><div class="relation-title"><span class="relation-icon">✦</span><h3>Related words</h3></div><div id="relatedList" class="chips"></div></div>
+        </div>
+
+        <div id="originBlock" class="origin-card hidden">
+          <div class="relation-title"><span class="relation-icon">⌁</span><h3>Origin / etymology</h3></div>
+          <p id="originText"></p>
         </div>
 
         <div id="sourceBlock" class="source-row hidden">
@@ -243,15 +253,15 @@
   </main>
 
   <nav class="bottom-nav" aria-label="Primary navigation">
-    <button data-view="homeView" class="active"><span>⌂</span>Home</button>
-    <button data-view="searchView"><span>⌕</span>Dictionary</button>
-    <button data-view="reviewView"><span>↻</span>Review</button>
-    <button data-view="wordsView"><span>▤</span>Words</button>
-    <button data-view="settingsView"><span>⚙</span>Settings</button>
+    <button type="button" data-view="homeView" class="active"><span>⌂</span>Home</button>
+    <button type="button" data-view="searchView"><span>⌕</span>Dictionary</button>
+    <button type="button" data-view="reviewView"><span>↻</span>Review</button>
+    <button type="button" data-view="wordsView"><span>▤</span>Words</button>
+    <button type="button" data-view="settingsView"><span>⚙</span>Settings</button>
   </nav>
 
   <div id="toast" class="toast" role="status"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
-  <script src="./app.js"></script>
+  <script src="./app.js?v=2.1.0"></script>
 </body>
 </html>
