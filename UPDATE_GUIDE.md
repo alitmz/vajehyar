@@ -1,3 +1,7 @@
-# Updating to v2.5
+# Update to v2.6
 
-Upload all extracted files to the repository root and replace old files. Open `https://alitmz.github.io/vajehyar/?release=2.5.0` after deployment and refresh once. Existing words, Leitner progress, XP, active practice, and weekly history are preserved. Discovery-history data begins in v2.5 and is included in future backups.
+Upload all extracted files and both folders (`icons` and `vendor`) to the repository root. Commit, wait for Pages deployment, then open:
+
+`https://alitmz.github.io/vajehyar/?release=2.6.0`
+
+Refresh once. Do not clear site data. The AI model is downloaded later from inside the AI Tutor.

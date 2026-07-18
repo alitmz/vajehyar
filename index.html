@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#5b5cf0">
-  <meta name="description" content="VajehYar — a personal dictionary, Leitner trainer, and vocabulary game.">
+  <meta name="description" content="VajehYar — an IELTS vocabulary trainer with a private, on-device AI writing tutor.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="./manifest.webmanifest?release=2.5.0">
+  <link rel="manifest" href="./manifest.webmanifest?release=2.6.0">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles-v2.5.css?release=2.5.0">
+  <link rel="stylesheet" href="./styles-v2.6.css?release=2.6.0">
   <title>VajehYar</title>
 </head>
 <body>
@@ -91,6 +91,20 @@
         </div>
       </div>
 
+
+
+      <div class="card ai-home-card">
+        <div class="ai-home-copy">
+          <span class="eyebrow">OFFLINE AI TUTOR</span>
+          <h3>Get private feedback on sentences and IELTS writing.</h3>
+          <p class="muted">After a one-time model download, analysis runs on this device with no API key, token bill, or server.</p>
+          <div class="ai-feature-chips"><span>Grammar</span><span>Collocations</span><span>IELTS feedback</span><span>Question builder</span></div>
+        </div>
+        <div class="ai-home-action">
+          <div class="ai-status-orb" id="aiHomeStatusOrb"><span>AI</span><small id="aiHomeStatus">Not set up</small></div>
+          <button id="openAiTutorBtn" class="primary">Open AI Tutor →</button>
+        </div>
+      </div>
 
       <div class="card weekly-card">
         <div class="weekly-card-copy">
@@ -312,7 +326,7 @@
           <span class="eyebrow">TODAY'S WORD SET</span>
           <h3 id="practicePrompt">Write 2–4 sentences using at least two target words naturally.</h3>
           <div id="practiceWordChips" class="chips practice-word-chips"></div>
-          <p class="muted mini">VajehYar checks whether the target words appear in your writing. Grammar evaluation is not automatic.</p>
+          <p class="muted mini">VajehYar tracks target-word use. The optional Offline AI Tutor can also check grammar, vocabulary choice, collocations, and naturalness.</p>
         </div>
 
         <div class="card practice-editor-card">
@@ -324,9 +338,11 @@
           <div class="practice-meter"><span id="practiceMeter"></span></div>
           <div class="practice-actions">
             <button id="newPracticePromptBtn" class="secondary">New prompt</button>
+            <button id="checkPracticeAiBtn" class="ai-button">Check with Offline AI</button>
             <button id="savePracticeBtn" class="primary">Complete practice · +20 XP</button>
           </div>
           <p id="practiceFeedback" class="answer-feedback hidden"></p>
+          <div id="practiceAiSummary" class="practice-ai-summary hidden"></div>
         </div>
 
         <div class="card">
@@ -478,6 +494,112 @@
       </div>
     </section>
 
+
+    <section id="aiTutorView" class="view">
+      <div class="ai-topline">
+        <button id="aiBackBtn" class="text-button">← Home</button>
+        <div><span class="eyebrow">PRIVATE · ON DEVICE</span><h2>Offline AI Tutor</h2></div>
+      </div>
+
+      <div class="card ai-model-card">
+        <div class="ai-model-heading">
+          <div>
+            <span class="eyebrow">LOCAL MODEL</span>
+            <h3 id="aiModelTitle">Set up your tutor</h3>
+            <p id="aiCompatibilityText" class="muted">Checking WebGPU compatibility…</p>
+          </div>
+          <div class="ai-private-badge">🔒 Stays on device</div>
+        </div>
+        <div class="ai-model-controls">
+          <label>Model quality
+            <select id="aiModelSelect">
+              <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Lite · lower memory</option>
+              <option value="Qwen3-1.7B-q4f16_1-MLC">Standard · better feedback</option>
+            </select>
+          </label>
+          <label>Explanation language
+            <select id="aiLanguageSelect">
+              <option value="fa">Persian explanations</option>
+              <option value="en">English explanations</option>
+              <option value="both">English + Persian</option>
+            </select>
+          </label>
+        </div>
+        <div class="ai-progress-wrap hidden" id="aiProgressWrap">
+          <div class="progress-track"><span id="aiModelProgress"></span></div>
+          <p id="aiProgressText" class="mini muted">Preparing…</p>
+        </div>
+        <div class="ai-model-actions">
+          <button id="aiLoadBtn" class="primary">Download & load model</button>
+          <button id="aiRemoveBtn" class="danger hidden">Remove downloaded model</button>
+          <button id="aiStopBtn" class="secondary hidden">Stop generation</button>
+        </div>
+        <p class="mini muted">The first setup is a large download and needs internet. Later feedback works offline while the model remains in browser storage. Performance depends on your phone and Chrome WebGPU support.</p>
+      </div>
+
+      <div class="ai-mode-tabs" id="aiModeTabs">
+        <button data-ai-mode="sentence" class="active">Sentence Coach</button>
+        <button data-ai-mode="ielts">IELTS Writing</button>
+        <button data-ai-mode="questions">Question Builder</button>
+      </div>
+
+      <div id="aiSentencePanel" class="ai-panel">
+        <div class="card">
+          <div class="section-heading compact"><div><span class="eyebrow">SENTENCE COACH</span><h3>Check your own writing</h3></div><span class="helper">Grammar · usage · collocations</span></div>
+          <label for="aiTargetWords">Target words or phrases</label>
+          <input id="aiTargetWords" placeholder="e.g. significant impact, account for">
+          <label for="aiSentenceText">Your sentence or paragraph</label>
+          <textarea id="aiSentenceText" rows="8" placeholder="Write here, then ask the local tutor to analyse it..."></textarea>
+          <div class="ai-action-row"><button id="aiAnalyseSentenceBtn" class="primary">Analyse writing</button><button id="aiUseTodayWordsBtn" class="secondary">Use today's words</button></div>
+        </div>
+      </div>
+
+      <div id="aiIeltsPanel" class="ai-panel hidden">
+        <div class="card">
+          <div class="section-heading compact"><div><span class="eyebrow">IELTS WRITING COACH</span><h3>Educational band-style feedback</h3></div><span class="helper">Not an official score</span></div>
+          <div class="source-fields">
+            <label>Task type
+              <select id="aiIeltsTaskType"><option value="task2">Writing Task 2</option><option value="task1-academic">Academic Task 1</option><option value="task1-general">General Training Task 1</option></select>
+            </label>
+            <label>Feedback depth
+              <select id="aiIeltsDepth"><option value="focused">Focused</option><option value="detailed">Detailed</option></select>
+            </label>
+          </div>
+          <label for="aiIeltsPrompt">Question / task prompt</label>
+          <textarea id="aiIeltsPrompt" rows="4" placeholder="Paste the IELTS writing question..."></textarea>
+          <label for="aiIeltsEssay">Your response</label>
+          <textarea id="aiIeltsEssay" rows="14" placeholder="Paste or write your essay..."></textarea>
+          <div class="ai-action-row"><button id="aiAnalyseIeltsBtn" class="primary">Review IELTS writing</button><span id="aiWordCount" class="helper">0 words</span></div>
+        </div>
+      </div>
+
+      <div id="aiQuestionsPanel" class="ai-panel hidden">
+        <div class="card">
+          <div class="section-heading compact"><div><span class="eyebrow">QUESTION BUILDER</span><h3>Create extra practice from trusted vocabulary data</h3></div><span class="helper">Answers stay grounded in your bank</span></div>
+          <div class="source-fields">
+            <label>Vocabulary source
+              <select id="aiQuestionSource"><option value="difficult">Difficult saved words</option><option value="today">Today's words</option><option value="library">Random library words</option><option value="ielts">IELTS discovery bank</option></select>
+            </label>
+            <label>Question count
+              <select id="aiQuestionCount"><option value="3">3</option><option value="5" selected>5</option><option value="8">8</option></select>
+            </label>
+          </div>
+          <label>Question focus
+            <select id="aiQuestionFocus"><option value="mixed">Mixed</option><option value="collocation">Collocations</option><option value="sentence">Sentence completion</option><option value="meaning">Meaning and usage</option></select>
+          </label>
+          <button id="aiGenerateQuestionsBtn" class="primary wide">Generate practice questions</button>
+        </div>
+      </div>
+
+      <div id="aiRunStatus" class="card ai-run-status hidden"><div class="ai-thinking"><span></span><span></span><span></span></div><div><strong id="aiRunTitle">Tutor is thinking…</strong><p id="aiRunMessage" class="muted">Local generation can take a while on a phone.</p></div></div>
+      <div id="aiResult" class="ai-result hidden"></div>
+
+      <div class="card">
+        <div class="section-heading compact"><div><span class="eyebrow">HISTORY</span><h3>Recent AI feedback</h3></div><span id="aiHistoryCount" class="helper"></span></div>
+        <div id="aiHistoryList" class="ai-history-list"></div>
+      </div>
+    </section>
+
     <section id="wordsView" class="view">
       <div class="card">
         <div class="library-header">
@@ -515,10 +637,18 @@
           <p class="muted">The goal resets at midnight on your device.</p>
         </div>
 
+
+        <div class="card">
+          <span class="eyebrow">OFFLINE AI</span>
+          <h2>Private writing tutor</h2>
+          <p class="muted">Download an open-weight model once, then check sentences and IELTS writing locally without API tokens.</p>
+          <button id="settingsOpenAiBtn" class="primary wide">Open AI Tutor</button>
+        </div>
+
         <div class="card">
           <span class="eyebrow">APP</span>
           <h2>How it works</h2>
-          <p class="muted">New dictionary searches need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, adaptive discovery history, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
+          <p class="muted">New dictionary searches and the first AI-model download need internet access. Installed Android PWAs can receive shared words through the system Share menu. Saved words, context sentences, review progress, active-practice writing, weekly-test history, adaptive discovery history, XP, streaks, and backups stay on this device. Persian text uses the Vazirmatn typeface when available.</p>
         </div>
       </div>
     </section>
@@ -534,6 +664,6 @@
 
   <div id="toast" class="toast" role="status"></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>
-  <script src="./bootstrap-v2.5.js?release=2.5.0"></script>
+  <script src="./bootstrap-v2.6.js?release=2.6.0"></script>
 </body>
 </html>

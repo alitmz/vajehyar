@@ -1,8 +1,8 @@
 {
   "name": "VajehYar — Vocabulary Trainer",
   "short_name": "VajehYar",
-  "description": "A personal IELTS Band 7 vocabulary trainer with academic words, collocations, phrasal verbs, adaptive weekly tests, Leitner review, and active practice.",
-  "start_url": "./?release=2.5.0",
+  "description": "A personal IELTS vocabulary trainer with an optional private, on-device AI writing tutor.",
+  "start_url": "./?release=2.6.0",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -43,7 +43,7 @@
     {
       "name": "Dictionary",
       "short_name": "Dictionary",
-      "url": "./?release=2.5.0#search",
+      "url": "./?release=2.6.0#search",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -54,7 +54,18 @@
     {
       "name": "Review",
       "short_name": "Review",
-      "url": "./?release=2.5.0#review",
+      "url": "./?release=2.6.0#review",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI Tutor",
+      "short_name": "AI Tutor",
+      "url": "./?release=2.6.0#aiTutor",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -65,7 +76,7 @@
     {
       "name": "Weekly Test",
       "short_name": "Weekly Test",
-      "url": "./?release=2.5.0#weeklyTest",
+      "url": "./?release=2.6.0#weeklyTest",
       "icons": [
         {
           "src": "./icons/icon-192.png",
